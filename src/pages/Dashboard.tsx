@@ -34,7 +34,7 @@ export default function Dashboard() {
           <a href="#works-section" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
             <span className="sidebar-icon">&#128214;</span> 내 작품
           </a>
-          <Link to={`/works/${works[0]?.id}`} className="sidebar-link">
+          <Link to="/new-work" className="sidebar-link">
             <span className="sidebar-icon">&#128221;</span> 새 작품 쓰기
           </Link>
           <Link to="/profile" className="sidebar-link">
@@ -100,9 +100,9 @@ export default function Dashboard() {
         <section className="dashboard-section">
           <div className="section-header">
             <h2>내 작품</h2>
-            <button className="btn btn--primary btn--sm">+ 새 작품</button>
+            <Link to="/new-work" className="btn btn--primary btn--sm">+ 새 작품</Link>
           </div>
-          <div className="works-grid">
+          <div className="works-carousel">
             {works.map(work => (
               <Link to={`/works/${work.id}`} key={work.id} className="work-card">
                 <div className="work-cover" style={{ background: work.coverColor }}>
@@ -120,12 +120,12 @@ export default function Dashboard() {
               </Link>
             ))}
 
-            <div className="work-card work-card--new">
+            <Link to="/new-work" className="work-card work-card--new">
               <div className="work-new-inner">
                 <span className="work-new-icon">+</span>
                 <p>새 작품 시작하기</p>
               </div>
-            </div>
+            </Link>
           </div>
         </section>
 

@@ -1,13 +1,18 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote } from '../data/sampleData'
+import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote, type Chapter } from '../data/sampleData'
 import CharacterDetail from '../components/CharacterDetail'
 import RelationDiagram from '../components/RelationDiagram'
 import './WorkDetail.css'
 
 type Tab = 'write' | 'chapters' | 'characters' | 'world' | 'relations'
 type SortMode = 'name' | 'created' | 'updated'
+
+interface WorkSettings {
+  autoSave: boolean
+  autoSaveInterval: number // minutes
+}
 
 export default function WorkDetail() {
   const { id } = useParams()
@@ -16,6 +21,21 @@ export default function WorkDetail() {
   const [activeTab, setActiveTab] = useState<Tab>('write')
   const [activeChapter, setActiveChapter] = useState(0)
 
+  // Chapters state
+  const work = SAMPLE_WORKS.find(w => w.id === id)
+  const [chapters, setChapters] = useState<Chapter[]>(work?.chapters || [])
+  const [editorContent, setEditorContent] = useState(chapters[0]?.content || '')
+
+  // New chapter form
+  const [showNewChapterForm, setShowNewChapterForm] = useState(false)
+  const [newChapterTitle, setNewChapterTitle] = useState('')
+  const newChapterRef = useRef<HTMLDivElement>(null)
+
+  // Save status
+  const [hasChanges, setHasChanges] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
+  const [settings, setSettings] = useState<WorkSettings>({ autoSave: true, autoSaveInterval: 5 })
+
   // World tab state
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<SortMode>('name')
@@ -23,35 +43,55 @@ export default function WorkDetail() {
 
   // Character tab state
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterNote | null>(null)
-  const [characters, setCharacters] = useState(SAMPLE_WORKS.find(w => w.id === id)?.characters || [])
+  const [characters, setCharacters] = useState(work?.characters || [])
+
+  // Scroll to new chapter form
+  useEffect(() => {
+    if (showNewChapterForm && newChapterRef.current) {
+      newChapterRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [showNewChapterForm])
 
   if (!user) { navigate('/login'); return null }
-
-  const work = SAMPLE_WORKS.find(w => w.id === id)
   if (!work) return <div className="not-found">작품을 찾을 수 없습니다.</div>
 
-  const chapter = work.chapters[activeChapter]
-  const [editorContent, setEditorContent] = useState(chapter?.content || '')
+  const chapter = chapters[activeChapter]
+
+  const markChanged = () => setHasChanges(true)
+
+  // Chapter add
+  const openNewChapterForm = () => {
+    setActiveTab('chapters')
+    setShowNewChapterForm(true)
+    setNewChapterTitle('')
+  }
+
+  const addChapter = () => {
+    if (!newChapterTitle.trim()) return
+    const newCh: Chapter = {
+      id: `ch-new-${Date.now()}`,
+      title: newChapterTitle.trim(),
+      content: '',
+      updatedAt: new Date().toISOString().split('T')[0],
+      wordCount: 0,
+    }
+    setChapters(prev => [...prev, newCh])
+    setShowNewChapterForm(false)
+    setNewChapterTitle('')
+    setHasChanges(true)
+  }
 
   // World helpers
   const getSubFolders = (parentId: string | null): WorldFolder[] => {
     const folders = work.worldFolders.filter(f => f.parentId === parentId)
-    return sortFolders(folders)
-  }
-
-  const getNotesInFolder = (folderId: string): WorldNote[] => {
-    const notes = work.worldNotes.filter(n => n.folderId === folderId)
-    return sortNotes(notes)
-  }
-
-  const sortFolders = (folders: WorldFolder[]) => {
     return [...folders].sort((a, b) => {
       if (sortMode === 'name') return a.name.localeCompare(b.name, 'ko')
       return a.createdAt.localeCompare(b.createdAt)
     })
   }
 
-  const sortNotes = (notes: WorldNote[]) => {
+  const getNotesInFolder = (folderId: string): WorldNote[] => {
+    const notes = work.worldNotes.filter(n => n.folderId === folderId)
     return [...notes].sort((a, b) => {
       if (sortMode === 'name') return a.title.localeCompare(b.title, 'ko')
       if (sortMode === 'updated') return b.updatedAt.localeCompare(a.updatedAt)
@@ -89,10 +129,94 @@ export default function WorkDetail() {
           </div>
         </div>
         <div className="work-topbar-right">
-          <span className="save-status">자동 저장됨</span>
-          <button className="btn btn--primary btn--sm">저장</button>
+          {hasChanges ? (
+            <span className="save-status save-status--unsaved">미저장 변경사항</span>
+          ) : (
+            <span className="save-status">자동 저장됨</span>
+          )}
+          <button className="btn btn--primary btn--sm" onClick={() => setHasChanges(false)}>저장</button>
+          <button className="topbar-settings-btn" onClick={() => setShowSettings(!showSettings)} title="작품 설정">
+            &#9881;
+          </button>
         </div>
       </header>
+
+      {/* Settings Panel */}
+      {showSettings && (
+        <div className="settings-dropdown">
+          <div className="settings-dropdown-header">
+            <h3>작품 설정</h3>
+            <button className="settings-dropdown-close" onClick={() => setShowSettings(false)}>&times;</button>
+          </div>
+          <div className="settings-dropdown-body">
+            <div className="settings-row">
+              <div className="settings-row-info">
+                <span className="settings-row-label">자동 저장</span>
+                <span className="settings-row-desc">변경사항을 자동으로 저장합니다</span>
+              </div>
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={settings.autoSave}
+                  onChange={e => setSettings(s => ({ ...s, autoSave: e.target.checked }))}
+                />
+                <span className="toggle-slider" />
+              </label>
+            </div>
+            {settings.autoSave && (
+              <div className="settings-row">
+                <div className="settings-row-info">
+                  <span className="settings-row-label">저장 간격</span>
+                  <span className="settings-row-desc">자동 저장이 실행되는 간격</span>
+                </div>
+                <select
+                  className="settings-select"
+                  value={settings.autoSaveInterval}
+                  onChange={e => setSettings(s => ({ ...s, autoSaveInterval: Number(e.target.value) }))}
+                >
+                  <option value={1}>1분</option>
+                  <option value={3}>3분</option>
+                  <option value={5}>5분</option>
+                  <option value={10}>10분</option>
+                  <option value={15}>15분</option>
+                </select>
+              </div>
+            )}
+            <div className="settings-divider" />
+            <p className="settings-section-label">집필 지원 (준비 중)</p>
+            <div className="settings-row disabled">
+              <div className="settings-row-info">
+                <span className="settings-row-label">맞춤법 검사</span>
+                <span className="settings-row-desc">작성 중 맞춤법을 실시간으로 확인</span>
+              </div>
+              <label className="toggle-switch">
+                <input type="checkbox" disabled />
+                <span className="toggle-slider" />
+              </label>
+            </div>
+            <div className="settings-row disabled">
+              <div className="settings-row-info">
+                <span className="settings-row-label">글자 수 목표</span>
+                <span className="settings-row-desc">일일/챕터별 글자 수 목표 설정</span>
+              </div>
+              <label className="toggle-switch">
+                <input type="checkbox" disabled />
+                <span className="toggle-slider" />
+              </label>
+            </div>
+            <div className="settings-row disabled">
+              <div className="settings-row-info">
+                <span className="settings-row-label">집중 모드</span>
+                <span className="settings-row-desc">사이드바와 탭을 숨기고 에디터에 집중</span>
+              </div>
+              <label className="toggle-switch">
+                <input type="checkbox" disabled />
+                <span className="toggle-slider" />
+              </label>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tab Nav */}
       <div className="work-tabs">
@@ -119,17 +243,17 @@ export default function WorkDetail() {
           <div className="editor-layout">
             <aside className="chapter-sidebar">
               <h3>챕터 목록</h3>
-              {work.chapters.map((ch, i) => (
+              {chapters.map((ch, i) => (
                 <button
                   key={ch.id}
                   className={`chapter-item ${i === activeChapter ? 'active' : ''}`}
-                  onClick={() => { setActiveChapter(i); setEditorContent(work.chapters[i].content) }}
+                  onClick={() => { setActiveChapter(i); setEditorContent(chapters[i].content) }}
                 >
                   <span className="chapter-title">{ch.title}</span>
                   <span className="chapter-words">{ch.wordCount}자</span>
                 </button>
               ))}
-              <button className="chapter-item chapter-add">+ 새 챕터</button>
+              <button className="chapter-item chapter-add" onClick={openNewChapterForm}>+ 새 챕터</button>
             </aside>
 
             <div className="editor-area">
@@ -137,12 +261,12 @@ export default function WorkDetail() {
               <textarea
                 className="editor-textarea"
                 value={editorContent}
-                onChange={e => setEditorContent(e.target.value)}
+                onChange={e => { setEditorContent(e.target.value); markChanged() }}
                 placeholder="이야기를 시작하세요..."
               />
               <div className="editor-footer">
                 <span>{editorContent.length}자</span>
-                <span>챕터 {activeChapter + 1} / {work.chapters.length}</span>
+                <span>챕터 {activeChapter + 1} / {chapters.length}</span>
               </div>
             </div>
           </div>
@@ -151,11 +275,13 @@ export default function WorkDetail() {
         {activeTab === 'chapters' && (
           <div className="chapters-view">
             <div className="chapters-header">
-              <h2>전체 챕터</h2>
-              <button className="btn btn--primary btn--sm">+ 새 챕터 추가</button>
+              <h2>전체 챕터 ({chapters.length})</h2>
+              <button className="btn btn--primary btn--sm" onClick={() => { setShowNewChapterForm(true); setNewChapterTitle('') }}>
+                + 새 챕터 추가
+              </button>
             </div>
             <div className="chapters-list">
-              {work.chapters.map((ch, i) => (
+              {chapters.map((ch, i) => (
                 <div key={ch.id} className="chapter-card" onClick={() => { setActiveChapter(i); setActiveTab('write'); setEditorContent(ch.content) }}>
                   <div className="chapter-card-num">{i + 1}</div>
                   <div className="chapter-card-info">
@@ -168,6 +294,29 @@ export default function WorkDetail() {
                   </div>
                 </div>
               ))}
+
+              {/* New Chapter Form */}
+              {showNewChapterForm && (
+                <div className="new-chapter-form" ref={newChapterRef}>
+                  <div className="new-chapter-form-inner">
+                    <div className="chapter-card-num new">{chapters.length + 1}</div>
+                    <div className="new-chapter-fields">
+                      <input
+                        className="new-chapter-input"
+                        value={newChapterTitle}
+                        onChange={e => setNewChapterTitle(e.target.value)}
+                        placeholder="새 챕터 제목을 입력하세요..."
+                        autoFocus
+                        onKeyDown={e => { if (e.key === 'Enter') addChapter(); if (e.key === 'Escape') setShowNewChapterForm(false) }}
+                      />
+                      <div className="new-chapter-actions">
+                        <button className="btn btn--primary btn--sm" onClick={addChapter} disabled={!newChapterTitle.trim()}>추가</button>
+                        <button className="btn btn--ghost-sm" onClick={() => setShowNewChapterForm(false)}>취소</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -222,7 +371,6 @@ export default function WorkDetail() {
 
         {activeTab === 'world' && (
           <div className="world-view">
-            {/* Header with breadcrumb & controls */}
             <div className="world-header">
               <div className="world-header-left">
                 <div className="world-breadcrumb">
@@ -258,21 +406,14 @@ export default function WorkDetail() {
                 {currentFolderId && <button className="btn btn--ghost-sm">+ 노트 추가</button>}
               </div>
             </div>
-
             <div className="world-layout">
-              {/* Folder & Note listing */}
               <div className={`world-listing ${selectedNote ? 'has-detail' : ''}`}>
-                {/* Subfolders */}
                 {getSubFolders(currentFolderId).length > 0 && (
                   <div className="world-section">
                     <h3 className="world-section-title">폴더</h3>
                     <div className="world-folder-grid">
                       {getSubFolders(currentFolderId).map(folder => (
-                        <button
-                          key={folder.id}
-                          className="world-folder-card"
-                          onClick={() => { setCurrentFolderId(folder.id); setSelectedNote(null) }}
-                        >
+                        <button key={folder.id} className="world-folder-card" onClick={() => { setCurrentFolderId(folder.id); setSelectedNote(null) }}>
                           <div className="folder-icon" style={{ background: folder.color }}>&#128193;</div>
                           <div className="folder-info">
                             <span className="folder-name">{folder.name}</span>
@@ -283,26 +424,15 @@ export default function WorkDetail() {
                     </div>
                   </div>
                 )}
-
-                {/* Notes in current folder */}
                 {currentFolderId && (
                   <div className="world-section">
-                    <h3 className="world-section-title">
-                      노트 ({getNotesInFolder(currentFolderId).length})
-                    </h3>
+                    <h3 className="world-section-title">노트 ({getNotesInFolder(currentFolderId).length})</h3>
                     {getNotesInFolder(currentFolderId).length === 0 ? (
-                      <div className="world-empty">
-                        <p>이 폴더에 노트가 없습니다.</p>
-                        <button className="btn btn--ghost-sm">+ 첫 노트 작성하기</button>
-                      </div>
+                      <div className="world-empty"><p>이 폴더에 노트가 없습니다.</p><button className="btn btn--ghost-sm">+ 첫 노트 작성하기</button></div>
                     ) : (
                       <div className="world-note-list">
                         {getNotesInFolder(currentFolderId).map(note => (
-                          <button
-                            key={note.id}
-                            className={`world-note-item ${selectedNote?.id === note.id ? 'active' : ''}`}
-                            onClick={() => setSelectedNote(note)}
-                          >
+                          <button key={note.id} className={`world-note-item ${selectedNote?.id === note.id ? 'active' : ''}`} onClick={() => setSelectedNote(note)}>
                             <div className="note-item-icon">&#128196;</div>
                             <div className="note-item-info">
                               <span className="note-item-title">{note.title}</span>
@@ -315,34 +445,15 @@ export default function WorkDetail() {
                     )}
                   </div>
                 )}
-
-                {/* Root level: show all folders prompt */}
                 {!currentFolderId && getSubFolders(null).length === 0 && (
-                  <div className="world-empty-root">
-                    <p>세계관 폴더를 만들어 설정을 정리하세요.</p>
-                    <button className="btn btn--primary btn--sm">+ 첫 폴더 만들기</button>
-                  </div>
+                  <div className="world-empty-root"><p>세계관 폴더를 만들어 설정을 정리하세요.</p><button className="btn btn--primary btn--sm">+ 첫 폴더 만들기</button></div>
                 )}
               </div>
-
-              {/* Note detail panel */}
               {selectedNote && (
                 <div className="world-detail-panel">
-                  <div className="detail-panel-header">
-                    <h2>{selectedNote.title}</h2>
-                    <button className="detail-close" onClick={() => setSelectedNote(null)}>&times;</button>
-                  </div>
-                  <div className="detail-panel-meta">
-                    <span>생성: {selectedNote.createdAt}</span>
-                    <span>수정: {selectedNote.updatedAt}</span>
-                  </div>
-                  <div className="detail-panel-body">
-                    <textarea
-                      className="detail-textarea"
-                      defaultValue={selectedNote.content}
-                      placeholder="노트 내용을 작성하세요..."
-                    />
-                  </div>
+                  <div className="detail-panel-header"><h2>{selectedNote.title}</h2><button className="detail-close" onClick={() => setSelectedNote(null)}>&times;</button></div>
+                  <div className="detail-panel-meta"><span>생성: {selectedNote.createdAt}</span><span>수정: {selectedNote.updatedAt}</span></div>
+                  <div className="detail-panel-body"><textarea className="detail-textarea" defaultValue={selectedNote.content} onChange={markChanged} placeholder="노트 내용을 작성하세요..." /></div>
                 </div>
               )}
             </div>
@@ -352,7 +463,7 @@ export default function WorkDetail() {
           <div className="relations-view">
             <div className="chapters-header">
               <h2>캐릭터 관계도</h2>
-              <p className="relations-hint">캐릭터를 클릭하면 상세 정보를 볼 수 있습니다</p>
+              <p className="relations-hint">캐릭터를 클릭하면 상세 정보, 관계선을 클릭하면 주석을 편집할 수 있습니다</p>
             </div>
             <RelationDiagram
               characters={characters}
@@ -364,6 +475,7 @@ export default function WorkDetail() {
                   newRels[relIndex] = { ...newRels[relIndex], ...updates }
                   return { ...c, relations: newRels }
                 }))
+                markChanged()
               }}
             />
           </div>
@@ -384,6 +496,7 @@ export default function WorkDetail() {
               return [...prev, updated]
             })
             setSelectedCharacter(updated)
+            markChanged()
           }}
         />
       )}

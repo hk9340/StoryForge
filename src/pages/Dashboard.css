@@ -229,6 +229,42 @@
   gap: 20px;
 }
 
+.works-carousel {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.works-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+
+.works-carousel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.works-carousel::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.works-carousel .work-card {
+  min-width: 300px;
+  max-width: 340px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.works-carousel .work-card--new {
+  min-width: 200px;
+  max-width: 200px;
+}
+
 .work-card {
   background: white;
   border-radius: var(--radius-md);

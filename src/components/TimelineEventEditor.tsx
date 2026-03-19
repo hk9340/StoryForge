@@ -25,12 +25,6 @@ export default function TimelineEventEditor({ event, chapters, characters, onSav
     setCharacterIds(event?.characterIds || [])
   }, [event, chapters])
 
-  const toggleCharacter = (charId: string) => {
-    setCharacterIds(prev =>
-      prev.includes(charId) ? prev.filter(id => id !== charId) : [...prev, charId]
-    )
-  }
-
   const handleSave = () => {
     if (!title.trim()) return
     onSave({

@@ -158,6 +158,34 @@ export default function WorkDetail() {
         </div>
       </header>
 
+      {/* Work Stats Bar */}
+      <div className="work-stats-bar">
+        <div className="work-stat-item">
+          <span className="work-stat-value">{chapters.length}</span>
+          <span className="work-stat-label">챕터</span>
+        </div>
+        <div className="work-stat-divider" />
+        <div className="work-stat-item">
+          <span className="work-stat-value">{characters.length}</span>
+          <span className="work-stat-label">캐릭터</span>
+        </div>
+        <div className="work-stat-divider" />
+        <div className="work-stat-item">
+          <span className="work-stat-value">{chapters.reduce((sum, ch) => sum + ch.wordCount, 0).toLocaleString()}</span>
+          <span className="work-stat-label">총 글자 수</span>
+        </div>
+        <div className="work-stat-divider" />
+        <div className="work-stat-item">
+          <span className="work-stat-value">{work.worldNotes.length}</span>
+          <span className="work-stat-label">세계관 노트</span>
+        </div>
+        <div className="work-stat-divider" />
+        <div className="work-stat-item">
+          <span className="work-stat-value">{work.updatedAt}</span>
+          <span className="work-stat-label">최근 수정</span>
+        </div>
+      </div>
+
       {/* Settings Panel */}
       {showSettings && (
         <div className="settings-dropdown">

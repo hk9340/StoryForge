@@ -77,6 +77,57 @@
   color: var(--primary);
 }
 
+/* ===== Work Stats Bar ===== */
+.work-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 10px 24px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.work-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 20px;
+}
+
+.work-stat-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.work-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.work-stat-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+}
+
+@media (max-width: 768px) {
+  .work-stats-bar {
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px 16px;
+  }
+
+  .work-stat-item {
+    padding: 4px 10px;
+  }
+
+  .work-stat-divider {
+    display: none;
+  }
+}
+
 /* ===== Settings Dropdown ===== */
 .settings-dropdown {
   position: absolute;

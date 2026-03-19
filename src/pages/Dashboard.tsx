@@ -25,9 +25,6 @@ export default function Dashboard() {
     return null
   }
 
-  const totalWords = works.reduce((sum, w) => sum + w.totalWords, 0)
-  const totalChapters = works.reduce((sum, w) => sum + w.chapters.length, 0)
-
   return (
     <div className="dashboard">
       {/* Sidebar */}
@@ -82,38 +79,6 @@ export default function Dashboard() {
             <p>오늘도 좋은 이야기를 써볼까요?</p>
           </div>
         </header>
-
-        {/* Stats */}
-        <section className="stats-grid">
-          <div className="stat-card">
-            <span className="stat-icon">&#128214;</span>
-            <div className="stat-info">
-              <span className="stat-value">{works.length}</span>
-              <span className="stat-label">작품 수</span>
-            </div>
-          </div>
-          <div className="stat-card">
-            <span className="stat-icon">&#128196;</span>
-            <div className="stat-info">
-              <span className="stat-value">{totalChapters}</span>
-              <span className="stat-label">총 챕터</span>
-            </div>
-          </div>
-          <div className="stat-card">
-            <span className="stat-icon">&#9999;&#65039;</span>
-            <div className="stat-info">
-              <span className="stat-value">{totalWords.toLocaleString()}</span>
-              <span className="stat-label">총 글자 수</span>
-            </div>
-          </div>
-          <div className="stat-card">
-            <span className="stat-icon">&#128293;</span>
-            <div className="stat-info">
-              <span className="stat-value">3일</span>
-              <span className="stat-label">연속 집필</span>
-            </div>
-          </div>
-        </section>
 
         {/* Works */}
         <section className="dashboard-section">

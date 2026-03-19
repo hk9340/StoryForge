@@ -89,27 +89,66 @@ export default function TimelineEventEditor({ event, chapters, characters, onSav
         </div>
         <div className="tl-editor-group">
           <label>등장인물 ({characterIds.length}명 선택)</label>
+
+          {/* Selected characters as horizontal cards */}
+          {characterIds.length > 0 && (
+            <div className="tl-char-cards">
+              {characterIds.map(id => {
+                const c = characters.find(ch => ch.id === id)
+                if (!c) return null
+                return (
+                  <div key={c.id} className="tl-char-card">
+                    <span className="tl-char-card-avatar">{c.name[0]}</span>
+                    <span className="tl-char-card-name">{c.name}</span>
+                    <button
+                      className="tl-char-card-remove"
+                      onClick={() => setCharacterIds(prev => prev.filter(x => x !== c.id))}
+                      title="제거"
+                    >&#8854;</button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Search & results */}
           <input
             className="search-input search-input--sm"
             value={charSearch}
             onChange={e => setCharSearch(e.target.value)}
-            placeholder="캐릭터 이름 검색..."
+            placeholder="캐릭터 이름으로 검색하여 추가..."
           />
-          <div className="tl-editor-char-list">
-            {characters
-              .filter(c => !charSearch.trim() || c.name.toLowerCase().includes(charSearch.toLowerCase()))
-              .map(c => (
-              <label key={c.id} className={`tl-char-check ${characterIds.includes(c.id) ? 'checked' : ''}`}>
-                <input
-                  type="checkbox"
-                  checked={characterIds.includes(c.id)}
-                  onChange={() => toggleCharacter(c.id)}
-                />
-                <span className="tl-char-check-avatar">{c.name[0]}</span>
-                <span>{c.name}</span>
-              </label>
-            ))}
-          </div>
+          {charSearch.trim() && (
+            <div className="tl-char-search-results">
+              {characters
+                .filter(c => c.name.toLowerCase().includes(charSearch.toLowerCase()))
+                .map(c => {
+                  const isAdded = characterIds.includes(c.id)
+                  return (
+                    <div key={c.id} className={`tl-char-search-item ${isAdded ? 'added' : ''}`}>
+                      <span className="tl-char-card-avatar">{c.name[0]}</span>
+                      <span className="tl-char-search-name">{c.name}</span>
+                      <span className="tl-char-search-role">{c.role}</span>
+                      <button
+                        className={`tl-char-search-btn ${isAdded ? 'remove' : 'add'}`}
+                        onClick={() => {
+                          if (isAdded) {
+                            setCharacterIds(prev => prev.filter(x => x !== c.id))
+                          } else {
+                            setCharacterIds(prev => [...prev, c.id])
+                          }
+                        }}
+                      >
+                        {isAdded ? '−' : '+'}
+                      </button>
+                    </div>
+                  )
+                })}
+              {characters.filter(c => c.name.toLowerCase().includes(charSearch.toLowerCase())).length === 0 && (
+                <div className="tl-char-search-empty">검색 결과가 없습니다.</div>
+              )}
+            </div>
+          )}
         </div>
       </div>
       <div className="tl-editor-footer">

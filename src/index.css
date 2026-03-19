@@ -137,6 +137,21 @@
   background: var(--card-bg);
 }
 
+[data-theme="dark"] .tl-card,
+[data-theme="dark"] .tl-editor,
+[data-theme="dark"] .tl-snapshot {
+  background: var(--card-bg);
+}
+
+[data-theme="dark"] .tl-filter-pill {
+  background: var(--card-bg);
+}
+
+[data-theme="dark"] .tl-action-btn {
+  background: var(--bg-secondary);
+  border-color: var(--border);
+}
+
 [data-theme="dark"] .glossary-item.pinned {
   background: rgba(139, 133, 255, 0.08);
 }

@@ -2,12 +2,13 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useConfirm } from '../contexts/ConfirmContext'
-import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote, type Chapter } from '../data/sampleData'
+import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote, type Chapter, type TimelineEvent, type ChapterRelationSnapshot } from '../data/sampleData'
 import CharacterDetail from '../components/CharacterDetail'
 import RelationDiagram from '../components/RelationDiagram'
+import TimelineTab from '../components/TimelineTab'
 import './WorkDetail.css'
 
-type Tab = 'write' | 'chapters' | 'characters' | 'relations' | 'world' | 'glossary'
+type Tab = 'write' | 'chapters' | 'characters' | 'relations' | 'timeline' | 'world' | 'glossary'
 type SortMode = 'name' | 'created' | 'updated'
 
 interface WorkSettings {
@@ -65,6 +66,10 @@ export default function WorkDetail() {
   const [newTerm, setNewTerm] = useState('')
   const [newTermDesc, setNewTermDesc] = useState('')
   const [glossaryTooltip, setGlossaryTooltip] = useState<{ term: string; desc: string; x: number; y: number } | null>(null)
+
+  // Timeline state
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>(work?.timelineEvents || [])
+  const [chapterSnapshots, setChapterSnapshots] = useState<ChapterRelationSnapshot[]>(work?.chapterSnapshots || [])
 
   // Scroll to new chapter form
   useEffect(() => {
@@ -296,6 +301,9 @@ export default function WorkDetail() {
         </button>
         <button className={`work-tab ${activeTab === 'relations' ? 'active' : ''}`} onClick={() => setActiveTab('relations')}>
           &#128268; 관계도
+        </button>
+        <button className={`work-tab ${activeTab === 'timeline' ? 'active' : ''}`} onClick={() => setActiveTab('timeline')}>
+          &#128337; 타임라인
         </button>
         <button className={`work-tab ${activeTab === 'world' ? 'active' : ''}`} onClick={() => { setActiveTab('world'); setSelectedNote(null) }}>
           &#127760; 세계관
@@ -559,6 +567,18 @@ export default function WorkDetail() {
               })}
             </div>
           </div>
+        )}
+
+        {activeTab === 'timeline' && (
+          <TimelineTab
+            chapters={chapters}
+            characters={characters}
+            timelineEvents={timelineEvents}
+            setTimelineEvents={setTimelineEvents}
+            chapterSnapshots={chapterSnapshots}
+            setChapterSnapshots={setChapterSnapshots}
+            markChanged={markChanged}
+          />
         )}
 
         {activeTab === 'world' && (

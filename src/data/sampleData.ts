@@ -54,6 +54,29 @@ export interface WorldFolder {
   createdAt: string
 }
 
+export interface TimelineEvent {
+  id: string
+  title: string
+  description: string
+  timeLabel?: string
+  chapterId: string
+  characterIds: string[]
+  order: number
+}
+
+export interface ChapterCharRelation {
+  sourceId: string
+  targetId: string
+  label: string
+  color: string
+  note?: string
+}
+
+export interface ChapterRelationSnapshot {
+  chapterId: string
+  relations: ChapterCharRelation[]
+}
+
 export interface Work {
   id: string
   title: string
@@ -65,6 +88,8 @@ export interface Work {
   characters: CharacterNote[]
   worldFolders: WorldFolder[]
   worldNotes: WorldNote[]
+  timelineEvents: TimelineEvent[]
+  chapterSnapshots: ChapterRelationSnapshot[]
   createdAt: string
   updatedAt: string
   totalWords: number
@@ -214,6 +239,13 @@ export const SAMPLE_WORKS: Work[] = [
         createdAt: '2026-03-18', updatedAt: '2026-03-19',
       },
     ],
+    timelineEvents: [
+      { id: 'te-1', title: '별이 사라지다', description: '어느 날 밤, 하늘의 별이 모두 사라진다. 마을 사람들은 기억조차 하지 못하지만 유나만이 별을 기억한다.', timeLabel: '어느 날 밤', chapterId: 'ch-1', characterIds: ['char-1'], order: 1 },
+      { id: 'te-2', title: '숲으로의 결심', description: '할머니의 이야기를 떠올린 유나는 별을 찾기 위해 숲으로 가기로 결심한다.', chapterId: 'ch-1', characterIds: ['char-1'], order: 2 },
+      { id: 'te-3', title: '숲의 입구 진입', description: '안개에 싸인 숲 입구를 지나 발광하는 나뭇잎의 세계로 들어선다.', timeLabel: '다음 날 아침', chapterId: 'ch-2', characterIds: ['char-1'], order: 3 },
+      { id: 'te-4', title: '루미와의 만남', description: '빛나는 작은 정령 루미가 나타나 유나를 기다렸다고 말한다.', chapterId: 'ch-2', characterIds: ['char-1', 'char-2'], order: 4 },
+    ],
+    chapterSnapshots: [],
     createdAt: '2026-03-15',
     updatedAt: '2026-03-19',
     totalWords: 445,
@@ -261,6 +293,8 @@ export const SAMPLE_WORKS: Work[] = [
         createdAt: '2026-03-18', updatedAt: '2026-03-18',
       },
     ],
+    timelineEvents: [],
+    chapterSnapshots: [],
     createdAt: '2026-03-18',
     updatedAt: '2026-03-18',
     totalWords: 132,

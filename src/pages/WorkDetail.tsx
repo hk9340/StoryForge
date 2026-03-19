@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useConfirm } from '../contexts/ConfirmContext'
-import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote, type Chapter, type TimelineEvent, type ChapterRelationSnapshot } from '../data/sampleData'
+import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote, type Chapter, type Episode, type TimelineEvent, type ChapterRelationSnapshot } from '../data/sampleData'
 import CharacterDetail from '../components/CharacterDetail'
 import RelationDiagram from '../components/RelationDiagram'
 import TimelineTab from '../components/TimelineTab'
@@ -29,12 +29,14 @@ export default function WorkDetail() {
   const confirm = useConfirm()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<Tab>('write')
-  const [activeChapter, setActiveChapter] = useState(0)
+  const [activeChapterId, setActiveChapterId] = useState<string>('')
+  const [activeEpisodeId, setActiveEpisodeId] = useState<string>('')
+  const [expandedSidebarChapters, setExpandedSidebarChapters] = useState<Set<string>>(new Set())
 
   // Chapters state
   const work = SAMPLE_WORKS.find(w => w.id === id)
   const [chapters, setChapters] = useState<Chapter[]>(work?.chapters || [])
-  const [editorContent, setEditorContent] = useState(chapters[0]?.content || '')
+  const [editorContent, setEditorContent] = useState('')
 
   // New chapter form
   const [showNewChapterForm, setShowNewChapterForm] = useState(false)
@@ -82,10 +84,35 @@ export default function WorkDetail() {
     }
   }, [showNewChapterForm])
 
+  // Initialize first chapter/episode
+  useEffect(() => {
+    if (chapters.length > 0 && !activeChapterId) {
+      const ch = chapters[0]
+      setActiveChapterId(ch.id)
+      setExpandedSidebarChapters(new Set([ch.id]))
+      if (ch.episodes.length > 0) {
+        setActiveEpisodeId(ch.episodes[0].id)
+        setEditorContent(ch.episodes[0].content)
+      }
+    }
+  }, [chapters, activeChapterId])
+
   if (!user) { navigate('/login'); return null }
   if (!work) return <div className="not-found">작품을 찾을 수 없습니다.</div>
 
-  const chapter = chapters[activeChapter]
+  const activeChapter = chapters.find(c => c.id === activeChapterId)
+  const activeEpisode = activeChapter?.episodes.find(e => e.id === activeEpisodeId)
+  const totalEpisodes = chapters.reduce((sum, ch) => sum + ch.episodes.length, 0)
+  const totalWords = chapters.reduce((sum, ch) => sum + ch.episodes.reduce((s, ep) => s + ep.wordCount, 0), 0)
+
+  const selectEpisode = (chId: string, epId: string) => {
+    const ch = chapters.find(c => c.id === chId)
+    const ep = ch?.episodes.find(e => e.id === epId)
+    setActiveChapterId(chId)
+    setActiveEpisodeId(epId)
+    setEditorContent(ep?.content || '')
+    setExpandedSidebarChapters(prev => new Set(prev).add(chId))
+  }
 
   const markChanged = () => setHasChanges(true)
 
@@ -98,12 +125,18 @@ export default function WorkDetail() {
 
   const addChapter = () => {
     if (!newChapterTitle.trim()) return
+    const chId = `ch-new-${Date.now()}`
+    const epId = `ep-new-${Date.now()}`
     const newCh: Chapter = {
-      id: `ch-new-${Date.now()}`,
+      id: chId,
       title: newChapterTitle.trim(),
-      content: '',
-      updatedAt: new Date().toISOString().split('T')[0],
-      wordCount: 0,
+      episodes: [{
+        id: epId,
+        title: '에피소드 1',
+        content: '',
+        updatedAt: new Date().toISOString().split('T')[0],
+        wordCount: 0,
+      }],
     }
     setChapters(prev => [...prev, newCh])
     setShowNewChapterForm(false)
@@ -114,9 +147,41 @@ export default function WorkDetail() {
   const deleteChapter = async (e: React.MouseEvent, chapterId: string) => {
     e.stopPropagation()
     if (!await confirm('이 챕터를 삭제하시겠습니까?')) return
-    const idx = chapters.findIndex(c => c.id === chapterId)
     setChapters(prev => prev.filter(c => c.id !== chapterId))
-    if (activeChapter >= idx && activeChapter > 0) setActiveChapter(activeChapter - 1)
+    if (activeChapterId === chapterId) {
+      const remaining = chapters.filter(c => c.id !== chapterId)
+      if (remaining.length > 0) selectEpisode(remaining[0].id, remaining[0].episodes[0]?.id || '')
+      else { setActiveChapterId(''); setActiveEpisodeId(''); setEditorContent('') }
+    }
+    markChanged()
+  }
+
+  const addEpisode = (chapterId: string) => {
+    const ch = chapters.find(c => c.id === chapterId)
+    if (!ch) return
+    const epId = `ep-new-${Date.now()}`
+    const newEp: Episode = {
+      id: epId,
+      title: `에피소드 ${ch.episodes.length + 1}`,
+      content: '',
+      updatedAt: new Date().toISOString().split('T')[0],
+      wordCount: 0,
+    }
+    setChapters(prev => prev.map(c => c.id === chapterId ? { ...c, episodes: [...c.episodes, newEp] } : c))
+    selectEpisode(chapterId, epId)
+    markChanged()
+  }
+
+  const deleteEpisode = async (e: React.MouseEvent, chapterId: string, episodeId: string) => {
+    e.stopPropagation()
+    if (!await confirm('이 에피소드를 삭제하시겠습니까?')) return
+    setChapters(prev => prev.map(c => c.id === chapterId ? { ...c, episodes: c.episodes.filter(ep => ep.id !== episodeId) } : c))
+    if (activeEpisodeId === episodeId) {
+      const ch = chapters.find(c => c.id === chapterId)
+      const remaining = ch?.episodes.filter(ep => ep.id !== episodeId) || []
+      if (remaining.length > 0) selectEpisode(chapterId, remaining[0].id)
+      else { setActiveEpisodeId(''); setEditorContent('') }
+    }
     markChanged()
   }
 
@@ -195,12 +260,17 @@ export default function WorkDetail() {
         </div>
         <div className="work-stat-divider" />
         <div className="work-stat-item">
+          <span className="work-stat-value">{totalEpisodes}</span>
+          <span className="work-stat-label">에피소드</span>
+        </div>
+        <div className="work-stat-divider" />
+        <div className="work-stat-item">
           <span className="work-stat-value">{characters.length}</span>
           <span className="work-stat-label">캐릭터</span>
         </div>
         <div className="work-stat-divider" />
         <div className="work-stat-item">
-          <span className="work-stat-value">{chapters.reduce((sum, ch) => sum + ch.wordCount, 0).toLocaleString()}</span>
+          <span className="work-stat-value">{totalWords.toLocaleString()}</span>
           <span className="work-stat-label">총 글자 수</span>
         </div>
         <div className="work-stat-divider" />
@@ -322,31 +392,61 @@ export default function WorkDetail() {
         {activeTab === 'write' && (
           <div className="editor-layout">
             <aside className="chapter-sidebar">
-              <h3>챕터 목록</h3>
-              {chapters.map((ch, i) => (
-                <div
-                  key={ch.id}
-                  className={`chapter-item ${i === activeChapter ? 'active' : ''}`}
-                  onClick={() => { setActiveChapter(i); setEditorContent(chapters[i].content) }}
-                >
-                  <span className="chapter-title">{ch.title}</span>
-                  <span className="chapter-words">{ch.wordCount}자</span>
-                  <button className="delete-btn-sm" onClick={e => deleteChapter(e, ch.id)} title="챕터 삭제">&#8854;</button>
-                </div>
-              ))}
+              <h3>챕터 / 에피소드</h3>
+              {chapters.map(ch => {
+                const isSideExpanded = expandedSidebarChapters.has(ch.id)
+                return (
+                  <div key={ch.id} className="sidebar-chapter-group">
+                    <div
+                      className={`chapter-item chapter-group-header ${activeChapterId === ch.id ? 'active' : ''}`}
+                      onClick={() => setExpandedSidebarChapters(prev => {
+                        const next = new Set(prev)
+                        if (next.has(ch.id)) next.delete(ch.id); else next.add(ch.id)
+                        return next
+                      })}
+                    >
+                      <span className="chapter-toggle">{isSideExpanded ? '▾' : '▸'}</span>
+                      <span className="chapter-title">{ch.title}</span>
+                      <span className="chapter-words">{ch.episodes.length}ep</span>
+                      <button className="delete-btn-sm" onClick={e => deleteChapter(e, ch.id)} title="챕터 삭제">&#8854;</button>
+                    </div>
+                    {isSideExpanded && (
+                      <div className="sidebar-episode-list">
+                        {ch.episodes.map(ep => (
+                          <div
+                            key={ep.id}
+                            className={`episode-item ${activeEpisodeId === ep.id ? 'active' : ''}`}
+                            onClick={() => selectEpisode(ch.id, ep.id)}
+                          >
+                            <span className="episode-title">{ep.title}</span>
+                            <span className="episode-words">{ep.wordCount}자</span>
+                            <button className="delete-btn-sm" onClick={e => deleteEpisode(e, ch.id, ep.id)} title="에피소드 삭제">&#8854;</button>
+                          </div>
+                        ))}
+                        <button className="episode-item episode-add" onClick={() => addEpisode(ch.id)}>+ 에피소드</button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
               <button className="chapter-item chapter-add" onClick={openNewChapterForm}>+ 새 챕터</button>
             </aside>
 
             <div className="editor-area">
+              {activeChapter && (
+                <div className="editor-chapter-label">{activeChapter.title}</div>
+              )}
               <input
                 className="editor-chapter-title-input"
-                value={chapter?.title || ''}
+                value={activeEpisode?.title || ''}
                 onChange={e => {
                   const newTitle = e.target.value
-                  setChapters(prev => prev.map((ch, i) => i === activeChapter ? { ...ch, title: newTitle } : ch))
+                  setChapters(prev => prev.map(ch => ch.id !== activeChapterId ? ch : {
+                    ...ch, episodes: ch.episodes.map(ep => ep.id === activeEpisodeId ? { ...ep, title: newTitle } : ep)
+                  }))
                   markChanged()
                 }}
-                placeholder="챕터 제목"
+                placeholder="에피소드 제목"
               />
               <div className="editor-wrapper">
                 <div className="editor-highlight-layer" aria-hidden="true">
@@ -366,7 +466,13 @@ export default function WorkDetail() {
                 <textarea
                   className="editor-textarea"
                   value={editorContent}
-                  onChange={e => { setEditorContent(e.target.value); markChanged() }}
+                  onChange={e => {
+                    setEditorContent(e.target.value)
+                    setChapters(prev => prev.map(ch => ch.id !== activeChapterId ? ch : {
+                      ...ch, episodes: ch.episodes.map(ep => ep.id === activeEpisodeId ? { ...ep, content: e.target.value, wordCount: e.target.value.length } : ep)
+                    }))
+                    markChanged()
+                  }}
                   placeholder="이야기를 시작하세요..."
                   onScroll={e => {
                     const target = e.target as HTMLTextAreaElement
@@ -399,7 +505,7 @@ export default function WorkDetail() {
               </div>
               <div className="editor-footer">
                 <span>{editorContent.length}자</span>
-                <span>챕터 {activeChapter + 1} / {chapters.length}</span>
+                <span>{activeChapter?.title} &middot; {activeEpisode?.title}</span>
               </div>
             </div>
           </div>
@@ -448,15 +554,17 @@ export default function WorkDetail() {
               {/* 챕터 목록 역순 (최신이 위) */}
               {[...chapters].reverse().filter(ch => !chapterSearch.trim() || ch.title.toLowerCase().includes(chapterSearch.toLowerCase())).map((ch) => {
                 const origIndex = chapters.indexOf(ch)
+                const chWordCount = ch.episodes.reduce((s, ep) => s + ep.wordCount, 0)
+                const firstContent = ch.episodes[0]?.content || ''
                 return (
-                  <div key={ch.id} className="chapter-card" onClick={() => { setActiveChapter(origIndex); setActiveTab('write'); setEditorContent(ch.content) }}>
+                  <div key={ch.id} className="chapter-card" onClick={() => { if (ch.episodes.length > 0) { selectEpisode(ch.id, ch.episodes[0].id); setActiveTab('write') } }}>
                     <div className="chapter-card-num">{origIndex + 1}</div>
                     <div className="chapter-card-info">
-                      <h3>{ch.title}</h3>
-                      <p>{ch.content ? ch.content.slice(0, 80) + '...' : '아직 작성되지 않았습니다.'}</p>
+                      <h3>{ch.title} <span className="chapter-ep-count">({ch.episodes.length} 에피소드)</span></h3>
+                      <p>{firstContent ? firstContent.slice(0, 80) + '...' : '아직 작성되지 않았습니다.'}</p>
                       <div className="chapter-card-meta">
-                        <span>{ch.wordCount}자</span>
-                        <span>수정: {ch.updatedAt}</span>
+                        <span>{chWordCount}자</span>
+                        <span>수정: {ch.episodes[0]?.updatedAt || '-'}</span>
                       </div>
                     </div>
                     <button className="delete-btn" onClick={e => deleteChapter(e, ch.id)} title="챕터 삭제">&#8854;</button>

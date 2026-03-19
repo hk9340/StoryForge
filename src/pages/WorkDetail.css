@@ -371,6 +371,96 @@
   margin-top: 8px;
 }
 
+/* ===== Sidebar Chapter>Episode Hierarchy ===== */
+.sidebar-chapter-group {
+  margin-bottom: 2px;
+}
+
+.chapter-group-header {
+  font-weight: 600;
+}
+
+.chapter-toggle {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  flex-shrink: 0;
+  width: 14px;
+}
+
+.sidebar-episode-list {
+  padding-left: 20px;
+}
+
+.episode-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  background: none;
+  text-align: left;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  cursor: pointer;
+  gap: 4px;
+}
+
+.episode-item:hover {
+  background: var(--bg-secondary);
+}
+
+.episode-item.active {
+  background: rgba(108, 99, 255, 0.08);
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.episode-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.episode-words {
+  font-size: 0.65rem;
+  color: var(--text-light);
+  flex-shrink: 0;
+}
+
+.episode-add {
+  color: var(--primary);
+  font-weight: 500;
+  justify-content: center;
+  border: 1px dashed var(--border);
+  margin-top: 4px;
+  font-size: 0.75rem;
+  padding: 5px 8px;
+}
+
+.episode-item:hover .delete-btn-sm {
+  opacity: 0.6;
+}
+
+/* Editor chapter label */
+.editor-chapter-label {
+  padding: 8px 40px 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Chapter card episode count */
+.chapter-ep-count {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-light);
+}
+
 /* ===== New Chapter Form ===== */
 .new-chapter-form {
   border: 2px solid var(--primary);

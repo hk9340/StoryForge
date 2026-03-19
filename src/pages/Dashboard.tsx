@@ -31,9 +31,9 @@ export default function Dashboard() {
           <Link to="/dashboard" className="sidebar-link active">
             <span className="sidebar-icon">&#128200;</span> 대시보드
           </Link>
-          <a href="#works-section" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
+          <Link to="/my-works" className="sidebar-link">
             <span className="sidebar-icon">&#128214;</span> 내 작품
-          </a>
+          </Link>
           <Link to="/new-work" className="sidebar-link">
             <span className="sidebar-icon">&#128221;</span> 새 작품 쓰기
           </Link>
@@ -105,8 +105,8 @@ export default function Dashboard() {
           <div className="works-carousel">
             {works.map(work => (
               <Link to={`/works/${work.id}`} key={work.id} className="work-card">
-                <div className="work-cover" style={{ background: work.coverColor }}>
-                  <span className="work-cover-icon">&#128214;</span>
+                <div className="work-cover" style={work.coverImage ? { backgroundImage: `url(${work.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: work.coverColor }}>
+                  {!work.coverImage && <span className="work-cover-icon">&#128214;</span>}
                 </div>
                 <div className="work-info">
                   <span className="work-genre">{work.genre}</span>

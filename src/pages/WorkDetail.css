@@ -390,6 +390,25 @@
   color: var(--text-primary);
 }
 
+.editor-chapter-title-input {
+  display: block;
+  width: 100%;
+  padding: 16px 40px 0;
+  border: none;
+  outline: none;
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.editor-chapter-title-input:focus {
+  border-bottom: 2px solid var(--primary);
+  margin-bottom: -2px;
+}
+
 .editor-textarea {
   flex: 1;
   padding: 20px 40px;
@@ -952,7 +971,21 @@
 
   .work-tabs {
     overflow-x: auto;
-    padding: 0 12px;
+    padding: 0 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+  }
+
+  .work-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .work-tab {
+    padding: 10px 14px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .character-grid {

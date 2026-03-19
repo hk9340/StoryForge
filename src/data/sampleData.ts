@@ -60,6 +60,7 @@ export interface Work {
   genre: string
   description: string
   coverColor: string
+  coverImage?: string
   chapters: Chapter[]
   characters: CharacterNote[]
   worldFolders: WorldFolder[]

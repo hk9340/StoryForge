@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard'
 import WorkDetail from './pages/WorkDetail'
 import Profile from './pages/Profile'
 import NewWork from './pages/NewWork'
+import MyWorks from './pages/MyWorks'
 import './App.css'
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
           <Route path="/works/:id" element={<WorkDetail />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/new-work" element={<NewWork />} />
+          <Route path="/my-works" element={<MyWorks />} />
         </Routes>
       </HashRouter>
     </AuthProvider>

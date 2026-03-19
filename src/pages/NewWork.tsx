@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import './NewWork.css'
@@ -13,6 +13,21 @@ export default function NewWork() {
   const [genre, setGenre] = useState('')
   const [description, setDescription] = useState('')
   const [coverColor, setCoverColor] = useState(COVER_COLORS[0])
+  const [coverImage, setCoverImage] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = ev => setCoverImage(ev.target?.result as string)
+    reader.readAsDataURL(file)
+  }
+
+  const removeCoverImage = () => {
+    setCoverImage(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   if (!user) { navigate('/login'); return null }
 
@@ -60,17 +75,30 @@ export default function NewWork() {
             </div>
 
             <div className="newwork-group">
-              <label>표지 색상</label>
-              <div className="cover-colors">
-                {COVER_COLORS.map(c => (
-                  <button
-                    key={c}
-                    className={`cover-color-btn ${coverColor === c ? 'selected' : ''}`}
-                    style={{ background: c }}
-                    onClick={() => setCoverColor(c)}
-                  />
-                ))}
-              </div>
+              <label>표지</label>
+              {coverImage ? (
+                <div className="cover-image-preview">
+                  <img src={coverImage} alt="표지" />
+                  <button className="cover-image-remove" onClick={removeCoverImage}>&times; 이미지 제거</button>
+                </div>
+              ) : (
+                <>
+                  <div className="cover-colors">
+                    {COVER_COLORS.map(c => (
+                      <button
+                        key={c}
+                        className={`cover-color-btn ${coverColor === c ? 'selected' : ''}`}
+                        style={{ background: c }}
+                        onClick={() => setCoverColor(c)}
+                      />
+                    ))}
+                  </div>
+                  <button className="cover-upload-btn" onClick={() => fileInputRef.current?.click()}>
+                    &#128247; 이미지 업로드
+                  </button>
+                  <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} hidden />
+                </>
+              )}
             </div>
 
             <div className="newwork-group">
@@ -85,8 +113,8 @@ export default function NewWork() {
 
             {/* Preview */}
             <div className="newwork-preview">
-              <div className="newwork-preview-cover" style={{ background: coverColor }}>
-                <span>&#128214;</span>
+              <div className="newwork-preview-cover" style={coverImage ? { backgroundImage: `url(${coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: coverColor }}>
+                {!coverImage && <span>&#128214;</span>}
               </div>
               <div className="newwork-preview-info">
                 <span className="newwork-preview-genre">{genre || '장르 미선택'}</span>

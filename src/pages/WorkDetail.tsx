@@ -257,7 +257,16 @@ export default function WorkDetail() {
             </aside>
 
             <div className="editor-area">
-              <div className="editor-chapter-title">{chapter?.title}</div>
+              <input
+                className="editor-chapter-title-input"
+                value={chapter?.title || ''}
+                onChange={e => {
+                  const newTitle = e.target.value
+                  setChapters(prev => prev.map((ch, i) => i === activeChapter ? { ...ch, title: newTitle } : ch))
+                  markChanged()
+                }}
+                placeholder="챕터 제목"
+              />
               <textarea
                 className="editor-textarea"
                 value={editorContent}
@@ -281,21 +290,7 @@ export default function WorkDetail() {
               </button>
             </div>
             <div className="chapters-list">
-              {chapters.map((ch, i) => (
-                <div key={ch.id} className="chapter-card" onClick={() => { setActiveChapter(i); setActiveTab('write'); setEditorContent(ch.content) }}>
-                  <div className="chapter-card-num">{i + 1}</div>
-                  <div className="chapter-card-info">
-                    <h3>{ch.title}</h3>
-                    <p>{ch.content ? ch.content.slice(0, 80) + '...' : '아직 작성되지 않았습니다.'}</p>
-                    <div className="chapter-card-meta">
-                      <span>{ch.wordCount}자</span>
-                      <span>수정: {ch.updatedAt}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {/* New Chapter Form */}
+              {/* New Chapter Form - top (역순이므로 최신이 위) */}
               {showNewChapterForm && (
                 <div className="new-chapter-form" ref={newChapterRef}>
                   <div className="new-chapter-form-inner">
@@ -317,6 +312,24 @@ export default function WorkDetail() {
                   </div>
                 </div>
               )}
+
+              {/* 챕터 목록 역순 (최신이 위) */}
+              {[...chapters].reverse().map((ch) => {
+                const origIndex = chapters.indexOf(ch)
+                return (
+                  <div key={ch.id} className="chapter-card" onClick={() => { setActiveChapter(origIndex); setActiveTab('write'); setEditorContent(ch.content) }}>
+                    <div className="chapter-card-num">{origIndex + 1}</div>
+                    <div className="chapter-card-info">
+                      <h3>{ch.title}</h3>
+                      <p>{ch.content ? ch.content.slice(0, 80) + '...' : '아직 작성되지 않았습니다.'}</p>
+                      <div className="chapter-card-meta">
+                        <span>{ch.wordCount}자</span>
+                        <span>수정: {ch.updatedAt}</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

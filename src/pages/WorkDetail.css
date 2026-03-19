@@ -1122,11 +1122,22 @@
   font-size: 0.9rem;
 }
 
+.glossary-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.glossary-pin-count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
 .glossary-hint {
-  margin-top: 20px;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-light);
-  text-align: center;
 }
 
 /* ===== Editor Highlight Layer ===== */

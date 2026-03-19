@@ -676,7 +676,11 @@ export default function WorkDetail() {
         {activeTab === 'glossary' && (
           <div className="glossary-view">
             <div className="chapters-header">
-              <h2>용어집 ({glossary.length})</h2>
+              <div className="glossary-title-row">
+                <h2>용어집 ({glossary.length})</h2>
+                <span className="glossary-pin-count">&#128204; 핀 고정 ({glossary.filter(g => g.pinned).length})</span>
+                <span className="glossary-hint">집필 화면에서 핀 고정 용어가 하이라이트되어 클릭 시 설명을 볼 수 있습니다.</span>
+              </div>
             </div>
 
             <div className="glossary-form">
@@ -740,7 +744,6 @@ export default function WorkDetail() {
                 ))
               )}
             </div>
-            <p className="glossary-hint">&#128204; 핀 고정된 용어는 집필 화면 본문에서 하이라이트되어 클릭 시 설명을 볼 수 있습니다.</p>
           </div>
         )}
       </div>

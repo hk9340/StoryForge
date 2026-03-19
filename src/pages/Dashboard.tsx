@@ -125,7 +125,7 @@ export default function Dashboard() {
                     <span>{work.chapters.length}챕터 &middot; {work.totalWords.toLocaleString()}자</span>
                   </div>
                 </div>
-                <button className="delete-btn" onClick={e => deleteWork(e, work.id)} title="작품 삭제">&#128465;</button>
+                <button className="delete-btn" onClick={e => deleteWork(e, work.id)} title="작품 삭제">&#8854;</button>
               </Link>
             ))}
 

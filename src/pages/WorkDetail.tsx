@@ -268,7 +268,7 @@ export default function WorkDetail() {
                 >
                   <span className="chapter-title">{ch.title}</span>
                   <span className="chapter-words">{ch.wordCount}자</span>
-                  <button className="delete-btn-sm" onClick={e => deleteChapter(e, ch.id)} title="챕터 삭제">&#128465;</button>
+                  <button className="delete-btn-sm" onClick={e => deleteChapter(e, ch.id)} title="챕터 삭제">&#8854;</button>
                 </div>
               ))}
               <button className="chapter-item chapter-add" onClick={openNewChapterForm}>+ 새 챕터</button>
@@ -345,7 +345,7 @@ export default function WorkDetail() {
                         <span>수정: {ch.updatedAt}</span>
                       </div>
                     </div>
-                    <button className="delete-btn" onClick={e => deleteChapter(e, ch.id)} title="챕터 삭제">&#128465;</button>
+                    <button className="delete-btn" onClick={e => deleteChapter(e, ch.id)} title="챕터 삭제">&#8854;</button>
                   </div>
                 )
               })}
@@ -411,7 +411,7 @@ export default function WorkDetail() {
                           <span className="character-relations-badge">&#128268; {char.relations.length}</span>
                         )}
                       </div>
-                      <button className="delete-btn-sm" onClick={e => deleteCharacter(e, char.id)} title="캐릭터 삭제">&#128465;</button>
+                      <button className="delete-btn-sm" onClick={e => deleteCharacter(e, char.id)} title="캐릭터 삭제">&#8854;</button>
                       <span className="char-accordion-toggle">{isExpanded ? '▲' : '▼'}</span>
                     </div>
                     {isExpanded && (
@@ -517,7 +517,7 @@ export default function WorkDetail() {
                             <span className="folder-name">{folder.name}</span>
                             <span className="folder-count">{currentFolderNoteCount(folder.id)}개 노트</span>
                           </div>
-                          <button className="delete-btn-sm" onClick={e => { e.stopPropagation(); if (window.confirm('이 폴더를 삭제하시겠습니까?')) markChanged() }} title="폴더 삭제">&#128465;</button>
+                          <button className="delete-btn-sm" onClick={e => { e.stopPropagation(); if (window.confirm('이 폴더를 삭제하시겠습니까?')) markChanged() }} title="폴더 삭제">&#8854;</button>
                         </div>
                       ))}
                     </div>
@@ -538,7 +538,7 @@ export default function WorkDetail() {
                               <span className="note-item-preview">{note.content.slice(0, 50)}...</span>
                               <span className="note-item-date">수정: {note.updatedAt}</span>
                             </div>
-                            <button className="delete-btn-sm" onClick={e => { e.stopPropagation(); if (window.confirm('이 노트를 삭제하시겠습니까?')) markChanged() }} title="노트 삭제">&#128465;</button>
+                            <button className="delete-btn-sm" onClick={e => { e.stopPropagation(); if (window.confirm('이 노트를 삭제하시겠습니까?')) markChanged() }} title="노트 삭제">&#8854;</button>
                           </div>
                         ))}
                       </div>

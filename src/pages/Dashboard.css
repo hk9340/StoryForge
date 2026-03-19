@@ -368,19 +368,20 @@
   right: 8px;
   background: rgba(255,255,255,0.85);
   border: none;
-  font-size: 1rem;
-  color: var(--text-light);
+  font-size: 1.1rem;
+  color: #d63031;
   padding: 4px 6px;
   border-radius: 4px;
   cursor: pointer;
   opacity: 0;
   transition: all 0.2s;
   z-index: 2;
+  font-weight: 700;
 }
 
 .work-card .delete-btn:hover {
   background: #fff0f0;
-  color: #d63031;
+  color: #c0392b;
   opacity: 1;
 }
 

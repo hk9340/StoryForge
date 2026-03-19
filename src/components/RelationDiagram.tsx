@@ -22,8 +22,10 @@ interface Edge {
   note?: string
   charId: string
   relIndex: number
-  cx: number
+  cx: number  // curve control point
   cy: number
+  lx: number  // label position
+  ly: number
   perpX: number
   perpY: number
   lineOffset: number
@@ -96,8 +98,19 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
         const ny = dy / dist
 
         // Offset: if two lines, first goes +offset, second goes -offset
-        const offsetBase = total > 1 ? 30 : 20
+        const offsetBase = total > 1 ? 35 : 20
         const offset = total > 1 ? (idx === 0 ? offsetBase : -offsetBase) : offsetBase
+
+        // Label position: for bidirectional, place at 1/3 from source (closer to "from" node)
+        // This separates labels naturally along the curve
+        const labelT = total > 1 ? 0.35 : 0.5
+        const ctrlX = mx + ny * offset
+        const ctrlY = my - nx * offset
+        // Quadratic bezier at t: B(t) = (1-t)²·P0 + 2(1-t)t·Ctrl + t²·P1
+        const t = labelT
+        const t1 = 1 - t
+        const labelX = t1 * t1 * node.x + 2 * t1 * t * ctrlX + t * t * targetNode.x
+        const labelY = t1 * t1 * node.y + 2 * t1 * t * ctrlY + t * t * targetNode.y
 
         result.push({
           from: node,
@@ -107,11 +120,13 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
           note: rel.note,
           charId: node.char.id,
           relIndex: ri,
-          cx: mx + ny * offset,
-          cy: my - nx * offset,
+          cx: ctrlX,
+          cy: ctrlY,
+          lx: labelX,
+          ly: labelY,
           perpX: ny,
           perpY: -nx,
-          lineOffset: total > 1 ? (idx === 0 ? 8 : -8) : 0,
+          lineOffset: total > 1 ? (idx === 0 ? 10 : -10) : 0,
         })
       }
     }
@@ -208,8 +223,8 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
                 {edge.label && (
                   <g style={{ cursor: 'pointer' }} onClick={() => handleEdgeClick(edge)}>
                     <rect
-                      x={edge.cx - Math.min(edge.label.length * 5 + 4, 80)}
-                      y={edge.cy - 10}
+                      x={edge.lx - Math.min(edge.label.length * 5 + 4, 80)}
+                      y={edge.ly - 10}
                       width={Math.min(edge.label.length * 10 + 8, 160)}
                       height={20}
                       rx="4"
@@ -219,8 +234,8 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
                       opacity="0.95"
                     />
                     <text
-                      x={edge.cx}
-                      y={edge.cy + 4}
+                      x={edge.lx}
+                      y={edge.ly + 4}
                       textAnchor="middle"
                       fill={edge.color}
                       fontSize="11"
@@ -234,8 +249,8 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
                 {/* Note indicator */}
                 {edge.note && (
                   <circle
-                    cx={edge.cx + Math.min(edge.label.length * 5 + 8, 84)}
-                    cy={edge.cy}
+                    cx={edge.lx + Math.min(edge.label.length * 5 + 8, 84)}
+                    cy={edge.ly}
                     r="5"
                     fill={edge.color}
                     opacity="0.6"

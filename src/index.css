@@ -108,6 +108,20 @@
   background: var(--bg-secondary);
 }
 
+[data-theme="dark"] .glossary-form,
+[data-theme="dark"] .glossary-item,
+[data-theme="dark"] .glossary-tooltip {
+  background: var(--card-bg);
+}
+
+[data-theme="dark"] .glossary-item.pinned {
+  background: rgba(139, 133, 255, 0.08);
+}
+
+[data-theme="dark"] .term-highlight {
+  background: rgba(139, 133, 255, 0.25);
+}
+
 * {
   margin: 0;
   padding: 0;

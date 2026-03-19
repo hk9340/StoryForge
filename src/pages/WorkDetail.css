@@ -992,6 +992,248 @@
   color: var(--text-light);
 }
 
+/* ===== Glossary ===== */
+.glossary-view {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.glossary-form {
+  background: var(--card-bg, white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.glossary-form-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.glossary-term-input {
+  width: 200px;
+  flex-shrink: 0;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-family: var(--sans);
+  font-weight: 600;
+  outline: none;
+}
+
+.glossary-term-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.08);
+}
+
+.glossary-desc-input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: var(--sans);
+  outline: none;
+  resize: vertical;
+  min-height: 42px;
+}
+
+.glossary-desc-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.08);
+}
+
+.glossary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.glossary-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--card-bg, white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+}
+
+.glossary-item.pinned {
+  border-color: var(--primary);
+  background: rgba(108, 99, 255, 0.03);
+}
+
+.glossary-pin {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0.3;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  filter: grayscale(1);
+}
+
+.glossary-pin.active {
+  opacity: 1;
+  filter: none;
+}
+
+.glossary-pin:hover {
+  opacity: 0.8;
+  transform: scale(1.15);
+}
+
+.glossary-item-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.glossary-item-term {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.glossary-item-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.glossary-item:hover .delete-btn-sm {
+  opacity: 0.6;
+}
+
+.glossary-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.glossary-hint {
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  text-align: center;
+}
+
+/* ===== Editor Highlight Layer ===== */
+.editor-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-highlight-layer {
+  position: absolute;
+  inset: 0;
+  padding: 20px 40px;
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  line-height: 2;
+  color: transparent;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-y: auto;
+  pointer-events: none;
+}
+
+.editor-wrapper .editor-textarea {
+  position: relative;
+  background: transparent;
+  caret-color: var(--text-primary);
+  width: 100%;
+  height: 100%;
+}
+
+.term-highlight {
+  background: rgba(108, 99, 255, 0.15);
+  border-bottom: 2px solid var(--primary);
+  border-radius: 2px;
+  color: transparent;
+  cursor: pointer;
+}
+
+/* ===== Glossary Tooltip ===== */
+.glossary-tooltip-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+}
+
+.glossary-tooltip {
+  position: fixed;
+  width: 300px;
+  max-width: 90vw;
+  background: var(--card-bg, white);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: popIn 0.15s ease-out;
+  z-index: 151;
+}
+
+.glossary-tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.glossary-tooltip-term {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.glossary-tooltip-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.glossary-tooltip-close:hover {
+  background: var(--bg-secondary);
+}
+
+.glossary-tooltip-desc {
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .glossary-form-row {
+    flex-direction: column;
+  }
+
+  .glossary-term-input {
+    width: 100%;
+  }
+
+  .editor-highlight-layer {
+    padding: 16px 20px;
+  }
+}
+
 /* ===== Delete Buttons ===== */
 .delete-btn {
   position: absolute;

@@ -6,12 +6,19 @@ import CharacterDetail from '../components/CharacterDetail'
 import RelationDiagram from '../components/RelationDiagram'
 import './WorkDetail.css'
 
-type Tab = 'write' | 'chapters' | 'characters' | 'world' | 'relations'
+type Tab = 'write' | 'chapters' | 'characters' | 'relations' | 'world' | 'glossary'
 type SortMode = 'name' | 'created' | 'updated'
 
 interface WorkSettings {
   autoSave: boolean
   autoSaveInterval: number // minutes
+}
+
+interface GlossaryTerm {
+  id: string
+  term: string
+  description: string
+  pinned: boolean
 }
 
 export default function WorkDetail() {
@@ -45,6 +52,16 @@ export default function WorkDetail() {
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterNote | null>(null)
   const [characters, setCharacters] = useState(work?.characters || [])
   const [expandedCharacters, setExpandedCharacters] = useState<Set<string>>(new Set())
+
+  // Glossary state
+  const [glossary, setGlossary] = useState<GlossaryTerm[]>([
+    { id: 'g1', term: '별의 숲', description: '별들이 지칠 때 쉬어가는 신비로운 장소. 일반인은 입구를 찾을 수 없다.', pinned: true },
+    { id: 'g2', term: '별빛 기억', description: '별이 가진 기억의 힘. 세상의 중요한 기억들을 보존하는 역할을 한다.', pinned: true },
+    { id: 'g3', term: '그림자 영역', description: '별빛이 사라진 곳에 생기는 어둠의 공간. 이곳에 들어가면 기억을 잃는다.', pinned: false },
+  ])
+  const [newTerm, setNewTerm] = useState('')
+  const [newTermDesc, setNewTermDesc] = useState('')
+  const [glossaryTooltip, setGlossaryTooltip] = useState<{ term: string; desc: string; x: number; y: number } | null>(null)
 
   // Scroll to new chapter form
   useEffect(() => {
@@ -274,11 +291,14 @@ export default function WorkDetail() {
         <button className={`work-tab ${activeTab === 'characters' ? 'active' : ''}`} onClick={() => setActiveTab('characters')}>
           &#128100; 캐릭터
         </button>
+        <button className={`work-tab ${activeTab === 'relations' ? 'active' : ''}`} onClick={() => setActiveTab('relations')}>
+          &#128268; 관계도
+        </button>
         <button className={`work-tab ${activeTab === 'world' ? 'active' : ''}`} onClick={() => { setActiveTab('world'); setSelectedNote(null) }}>
           &#127760; 세계관
         </button>
-        <button className={`work-tab ${activeTab === 'relations' ? 'active' : ''}`} onClick={() => setActiveTab('relations')}>
-          &#128268; 관계도
+        <button className={`work-tab ${activeTab === 'glossary' ? 'active' : ''}`} onClick={() => setActiveTab('glossary')}>
+          &#128218; 용어집
         </button>
       </div>
 
@@ -313,12 +333,55 @@ export default function WorkDetail() {
                 }}
                 placeholder="챕터 제목"
               />
-              <textarea
-                className="editor-textarea"
-                value={editorContent}
-                onChange={e => { setEditorContent(e.target.value); markChanged() }}
-                placeholder="이야기를 시작하세요..."
-              />
+              <div className="editor-wrapper">
+                <div className="editor-highlight-layer" aria-hidden="true">
+                  {(() => {
+                    const pinnedTerms = glossary.filter(g => g.pinned && g.term)
+                    if (pinnedTerms.length === 0) return editorContent || '\u00A0'
+                    const pattern = new RegExp(`(${pinnedTerms.map(g => g.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g')
+                    const parts = editorContent.split(pattern)
+                    return parts.map((part, i) => {
+                      const matched = pinnedTerms.find(g => g.term === part)
+                      if (matched) return <mark key={i} className="term-highlight">{part}</mark>
+                      return part
+                    })
+                  })()}
+                  {'\n'}
+                </div>
+                <textarea
+                  className="editor-textarea"
+                  value={editorContent}
+                  onChange={e => { setEditorContent(e.target.value); markChanged() }}
+                  placeholder="이야기를 시작하세요..."
+                  onScroll={e => {
+                    const target = e.target as HTMLTextAreaElement
+                    const highlight = target.previousElementSibling as HTMLElement
+                    if (highlight) highlight.scrollTop = target.scrollTop
+                  }}
+                  onClick={e => {
+                    const pinnedTerms = glossary.filter(g => g.pinned && g.term)
+                    if (pinnedTerms.length === 0) return
+                    const textarea = e.target as HTMLTextAreaElement
+                    const pos = textarea.selectionStart
+                    for (const g of pinnedTerms) {
+                      let idx = editorContent.indexOf(g.term)
+                      while (idx !== -1) {
+                        if (pos >= idx && pos <= idx + g.term.length) {
+                              setGlossaryTooltip({
+                            term: g.term,
+                            desc: g.description,
+                            x: Math.min(e.clientX, window.innerWidth - 320),
+                            y: e.clientY + 10,
+                          })
+                          return
+                        }
+                        idx = editorContent.indexOf(g.term, idx + 1)
+                      }
+                    }
+                    setGlossaryTooltip(null)
+                  }}
+                />
+              </div>
               <div className="editor-footer">
                 <span>{editorContent.length}자</span>
                 <span>챕터 {activeChapter + 1} / {chapters.length}</span>
@@ -607,7 +670,95 @@ export default function WorkDetail() {
             />
           </div>
         )}
+
+        {activeTab === 'glossary' && (
+          <div className="glossary-view">
+            <div className="chapters-header">
+              <h2>용어집 ({glossary.length})</h2>
+            </div>
+
+            <div className="glossary-form">
+              <div className="glossary-form-row">
+                <input
+                  className="glossary-term-input"
+                  value={newTerm}
+                  onChange={e => setNewTerm(e.target.value)}
+                  placeholder="용어를 입력하세요..."
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && newTerm.trim() && newTermDesc.trim()) {
+                      setGlossary(prev => [...prev, { id: `g-${Date.now()}`, term: newTerm.trim(), description: newTermDesc.trim(), pinned: false }])
+                      setNewTerm(''); setNewTermDesc(''); markChanged()
+                    }
+                  }}
+                />
+                <textarea
+                  className="glossary-desc-input"
+                  value={newTermDesc}
+                  onChange={e => setNewTermDesc(e.target.value)}
+                  placeholder="용어에 대한 설명..."
+                  rows={2}
+                />
+                <button
+                  className="btn btn--primary btn--sm"
+                  disabled={!newTerm.trim() || !newTermDesc.trim()}
+                  onClick={() => {
+                    setGlossary(prev => [...prev, { id: `g-${Date.now()}`, term: newTerm.trim(), description: newTermDesc.trim(), pinned: false }])
+                    setNewTerm(''); setNewTermDesc(''); markChanged()
+                  }}
+                >추가</button>
+              </div>
+            </div>
+
+            <div className="glossary-list">
+              {glossary.length === 0 ? (
+                <div className="glossary-empty"><p>등록된 용어가 없습니다. 위 입력란에서 용어를 추가해보세요.</p></div>
+              ) : (
+                glossary.map(g => (
+                  <div key={g.id} className={`glossary-item ${g.pinned ? 'pinned' : ''}`}>
+                    <button
+                      className={`glossary-pin ${g.pinned ? 'active' : ''}`}
+                      onClick={() => {
+                        setGlossary(prev => prev.map(t => t.id === g.id ? { ...t, pinned: !t.pinned } : t))
+                        markChanged()
+                      }}
+                      title={g.pinned ? '핀 해제 — 집필 화면에서 하이라이트 숨김' : '핀 고정 — 집필 화면에서 하이라이트 표시'}
+                    >
+                      &#128204;
+                    </button>
+                    <div className="glossary-item-content">
+                      <span className="glossary-item-term">{g.term}</span>
+                      <span className="glossary-item-desc">{g.description}</span>
+                    </div>
+                    <button className="delete-btn-sm" onClick={() => {
+                      if (window.confirm(`"${g.term}" 용어를 삭제하시겠습니까?`)) {
+                        setGlossary(prev => prev.filter(t => t.id !== g.id)); markChanged()
+                      }
+                    }} title="용어 삭제">&#8854;</button>
+                  </div>
+                ))
+              )}
+            </div>
+            <p className="glossary-hint">&#128204; 핀 고정된 용어는 집필 화면 본문에서 하이라이트되어 클릭 시 설명을 볼 수 있습니다.</p>
+          </div>
+        )}
       </div>
+
+      {/* Glossary Tooltip */}
+      {glossaryTooltip && (
+        <div className="glossary-tooltip-overlay" onClick={() => setGlossaryTooltip(null)}>
+          <div
+            className="glossary-tooltip"
+            style={{ top: glossaryTooltip.y, left: glossaryTooltip.x }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="glossary-tooltip-header">
+              <span className="glossary-tooltip-term">{glossaryTooltip.term}</span>
+              <button className="glossary-tooltip-close" onClick={() => setGlossaryTooltip(null)}>&times;</button>
+            </div>
+            <p className="glossary-tooltip-desc">{glossaryTooltip.desc}</p>
+          </div>
+        </div>
+      )}
 
       {/* Character Detail Overlay */}
       {selectedCharacter && (

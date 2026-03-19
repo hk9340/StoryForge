@@ -26,9 +26,10 @@ export default function TimelineTab({
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
   const [isAdding, setIsAdding] = useState(false)
   const [showSnapshot, setShowSnapshot] = useState(false)
+  const [editorDirty, setEditorDirty] = useState(false)
 
   const handleFilterChange = async (chapterId: string | null) => {
-    if ((isAdding || selectedEventId) && !showSnapshot) {
+    if (editorDirty) {
       if (!await confirm('수정사항이 저장되지 않았습니다. 챕터를 전환하시겠습니까?')) return
     }
     setFilterChapterId(chapterId)
@@ -53,6 +54,7 @@ export default function TimelineTab({
     setSelectedEventId(event.id)
     setIsAdding(false)
     setShowSnapshot(false)
+    setEditorDirty(false)
     markChanged()
   }
 
@@ -113,6 +115,7 @@ export default function TimelineTab({
     setIsAdding(false)
     setSelectedEventId(null)
     setShowSnapshot(false)
+    setEditorDirty(false)
   }
 
   const hasSidePanel = isAdding || selectedEventId || showSnapshot
@@ -169,6 +172,7 @@ export default function TimelineTab({
                 characters={characters}
                 onSave={handleSaveEvent}
                 onClose={closeSidePanel}
+                onDirty={setEditorDirty}
               />
             )}
           </div>

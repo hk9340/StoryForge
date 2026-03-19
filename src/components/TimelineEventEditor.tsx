@@ -7,9 +7,10 @@ interface Props {
   characters: CharacterNote[]
   onSave: (event: TimelineEvent) => void
   onClose: () => void
+  onDirty?: (dirty: boolean) => void
 }
 
-export default function TimelineEventEditor({ event, chapters, characters, onSave, onClose }: Props) {
+export default function TimelineEventEditor({ event, chapters, characters, onSave, onClose, onDirty }: Props) {
   const [title, setTitle] = useState(event?.title || '')
   const [description, setDescription] = useState(event?.description || '')
   const [timeLabel, setTimeLabel] = useState(event?.timeLabel || '')
@@ -17,12 +18,30 @@ export default function TimelineEventEditor({ event, chapters, characters, onSav
   const [characterIds, setCharacterIds] = useState<string[]>(event?.characterIds || [])
   const [charSearch, setCharSearch] = useState('')
 
+  // Track original snapshot for dirty check
+  const [original] = useState(() => ({
+    title: event?.title || '',
+    description: event?.description || '',
+    timeLabel: event?.timeLabel || '',
+    chapterId: event?.chapterId || chapters[0]?.id || '',
+    characterIds: event?.characterIds || [] as string[],
+  }))
+
+  // Compute dirty whenever form values change
+  useEffect(() => {
+    const dirty = title !== original.title || description !== original.description ||
+      timeLabel !== original.timeLabel || chapterId !== original.chapterId ||
+      JSON.stringify([...characterIds].sort()) !== JSON.stringify([...original.characterIds].sort())
+    onDirty?.(dirty)
+  }, [title, description, timeLabel, chapterId, characterIds, original, onDirty])
+
   useEffect(() => {
     setTitle(event?.title || '')
     setDescription(event?.description || '')
     setTimeLabel(event?.timeLabel || '')
     setChapterId(event?.chapterId || chapters[0]?.id || '')
     setCharacterIds(event?.characterIds || [])
+    onDirty?.(false)
   }, [event, chapters])
 
   const handleSave = () => {

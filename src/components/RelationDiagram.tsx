@@ -24,6 +24,9 @@ interface Edge {
   relIndex: number
   cx: number
   cy: number
+  perpX: number
+  perpY: number
+  lineOffset: number
 }
 
 interface SelectedEdge {
@@ -93,7 +96,7 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
         const ny = dy / dist
 
         // Offset: if two lines, first goes +offset, second goes -offset
-        const offsetBase = total > 1 ? 25 : 20
+        const offsetBase = total > 1 ? 30 : 20
         const offset = total > 1 ? (idx === 0 ? offsetBase : -offsetBase) : offsetBase
 
         result.push({
@@ -106,6 +109,9 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
           relIndex: ri,
           cx: mx + ny * offset,
           cy: my - nx * offset,
+          perpX: ny,
+          perpY: -nx,
+          lineOffset: total > 1 ? (idx === 0 ? 8 : -8) : 0,
         })
       }
     }
@@ -171,10 +177,11 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
             const dist = Math.sqrt(dx * dx + dy * dy)
             const nx = dx / dist
             const ny = dy / dist
-            const x1 = edge.from.x + nx * nodeR
-            const y1 = edge.from.y + ny * nodeR
-            const x2 = edge.to.x - nx * nodeR
-            const y2 = edge.to.y - ny * nodeR
+            // Offset start/end points perpendicular to line direction
+            const x1 = edge.from.x + nx * nodeR + edge.perpX * edge.lineOffset
+            const y1 = edge.from.y + ny * nodeR + edge.perpY * edge.lineOffset
+            const x2 = edge.to.x - nx * nodeR + edge.perpX * edge.lineOffset
+            const y2 = edge.to.y - ny * nodeR + edge.perpY * edge.lineOffset
             const isSelected = selectedEdge?.edge.charId === edge.charId && selectedEdge?.edge.relIndex === edge.relIndex
 
             return (

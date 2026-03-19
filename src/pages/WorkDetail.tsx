@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useConfirm } from '../contexts/ConfirmContext'
+import { useTheme } from '../contexts/ThemeContext'
 import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote, type Chapter, type Episode, type TimelineEvent, type ChapterRelationSnapshot } from '../data/sampleData'
 import CharacterDetail from '../components/CharacterDetail'
 import RelationDiagram from '../components/RelationDiagram'
@@ -27,6 +28,7 @@ export default function WorkDetail() {
   const { id } = useParams()
   const { user } = useAuth()
   const confirm = useConfirm()
+  const { dark, toggle: toggleTheme } = useTheme()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<Tab>('write')
   const [activeChapterId, setActiveChapterId] = useState<string>('')
@@ -293,6 +295,17 @@ export default function WorkDetail() {
             <button className="settings-dropdown-close" onClick={() => setShowSettings(false)}>&times;</button>
           </div>
           <div className="settings-dropdown-body">
+            <div className="settings-row" onClick={toggleTheme} style={{ cursor: 'pointer' }}>
+              <div className="settings-row-info">
+                <span className="settings-row-label">{dark ? '🌙 다크 모드' : '☀️ 라이트 모드'}</span>
+                <span className="settings-row-desc">화면 테마를 전환합니다</span>
+              </div>
+              <label className="toggle-switch" style={{ pointerEvents: 'none' }}>
+                <input type="checkbox" checked={dark} readOnly />
+                <span className="toggle-slider" />
+              </label>
+            </div>
+            <div className="settings-divider" />
             <div className="settings-row">
               <div className="settings-row-info">
                 <span className="settings-row-label">자동 저장</span>

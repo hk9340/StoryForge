@@ -209,3 +209,68 @@
   border-top: 1px solid var(--border);
   background: var(--bg-secondary);
 }
+
+/* ===== Edge Tooltip ===== */
+.edge-tooltip-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+}
+
+.edge-tooltip {
+  position: fixed;
+  width: 280px;
+  max-width: 90vw;
+  background: var(--card-bg, white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: popIn 0.15s ease-out;
+  z-index: 151;
+  overflow: hidden;
+}
+
+.edge-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 8px;
+}
+
+.edge-tooltip-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.edge-tooltip-names {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.edge-tooltip-label {
+  padding: 0 16px 6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.edge-tooltip-note {
+  padding: 0 16px 12px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.edge-tooltip-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-secondary);
+}

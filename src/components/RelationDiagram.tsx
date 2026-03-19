@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef } from 'react'
 import type { CharacterNote, CharacterRelation } from '../data/sampleData'
 import './RelationDiagram.css'
 
@@ -22,13 +22,14 @@ interface Edge {
   note?: string
   charId: string
   relIndex: number
-  cx: number  // curve control point
-  cy: number
-  lx: number  // label position
+  ctrlX: number
+  ctrlY: number
+  lx: number
   ly: number
-  perpX: number
-  perpY: number
-  lineOffset: number
+  x1: number
+  y1: number
+  x2: number
+  y2: number
 }
 
 interface SelectedEdge {
@@ -36,6 +37,12 @@ interface SelectedEdge {
   label: string
   note: string
   color: string
+}
+
+interface TooltipState {
+  edge: Edge
+  screenX: number
+  screenY: number
 }
 
 const COLOR_PALETTE = [
@@ -47,6 +54,8 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
   const width = 700
   const height = 500
   const [selectedEdge, setSelectedEdge] = useState<SelectedEdge | null>(null)
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null)
+  const svgRef = useRef<SVGSVGElement>(null)
 
   const nodes = useMemo<NodePos[]>(() => {
     const cx = width / 2
@@ -66,7 +75,6 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
     const result: Edge[] = []
     const pairCount = new Map<string, number>()
 
-    // Count how many edges exist per pair to offset them
     for (const node of nodes) {
       for (const rel of node.char.relations) {
         const targetNode = nodes.find(n => n.char.id === rel.targetId)
@@ -77,6 +85,7 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
     }
 
     const pairIndex = new Map<string, number>()
+    const nodeR = 30
 
     for (const node of nodes) {
       for (let ri = 0; ri < node.char.relations.length; ri++) {
@@ -91,55 +100,66 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
 
         const dx = targetNode.x - node.x
         const dy = targetNode.y - node.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        const ux = dx / dist  // unit vector along line
+        const uy = dy / dist
+        const px = -uy  // perpendicular vector
+        const py = ux
+
+        // For bidirectional: curve outward in opposite directions
+        // For single: slight curve for aesthetics
+        let curveOffset: number
+        let startOffset: number
+        if (total > 1) {
+          curveOffset = idx === 0 ? 45 : -45
+          startOffset = idx === 0 ? 14 : -14
+        } else {
+          curveOffset = 20
+          startOffset = 0
+        }
+
         const mx = (node.x + targetNode.x) / 2
         const my = (node.y + targetNode.y) / 2
-        const dist = Math.sqrt(dx * dx + dy * dy)
-        const nx = dx / dist
-        const ny = dy / dist
+        const ctrlX = mx + px * curveOffset
+        const ctrlY = my + py * curveOffset
 
-        // Offset: if two lines, first goes +offset, second goes -offset
-        const offsetBase = total > 1 ? 35 : 20
-        const offset = total > 1 ? (idx === 0 ? offsetBase : -offsetBase) : offsetBase
+        // Offset start/end points perpendicular so lines leave node at different angles
+        const x1 = node.x + ux * nodeR + px * startOffset
+        const y1 = node.y + uy * nodeR + py * startOffset
+        const x2 = targetNode.x - ux * nodeR + px * startOffset
+        const y2 = targetNode.y - uy * nodeR + py * startOffset
 
-        // Label position: for bidirectional, place at 1/3 from source (closer to "from" node)
-        // This separates labels naturally along the curve
-        const labelT = total > 1 ? 0.35 : 0.5
-        const ctrlX = mx + ny * offset
-        const ctrlY = my - nx * offset
-        // Quadratic bezier at t: B(t) = (1-t)²·P0 + 2(1-t)t·Ctrl + t²·P1
-        const t = labelT
+        // Label at t=0.35 on the bezier (closer to from-node)
+        const t = total > 1 ? 0.35 : 0.5
         const t1 = 1 - t
-        const labelX = t1 * t1 * node.x + 2 * t1 * t * ctrlX + t * t * targetNode.x
-        const labelY = t1 * t1 * node.y + 2 * t1 * t * ctrlY + t * t * targetNode.y
+        const lx = t1 * t1 * x1 + 2 * t1 * t * ctrlX + t * t * x2
+        const ly = t1 * t1 * y1 + 2 * t1 * t * ctrlY + t * t * y2
 
         result.push({
-          from: node,
-          to: targetNode,
-          label: rel.label,
-          color: rel.color,
-          note: rel.note,
-          charId: node.char.id,
-          relIndex: ri,
-          cx: ctrlX,
-          cy: ctrlY,
-          lx: labelX,
-          ly: labelY,
-          perpX: ny,
-          perpY: -nx,
-          lineOffset: total > 1 ? (idx === 0 ? 10 : -10) : 0,
+          from: node, to: targetNode,
+          label: rel.label, color: rel.color, note: rel.note,
+          charId: node.char.id, relIndex: ri,
+          ctrlX, ctrlY, lx, ly, x1, y1, x2, y2,
         })
       }
     }
     return result
   }, [nodes])
 
-  const handleEdgeClick = (edge: Edge) => {
+  const handleEdgeClick = (edge: Edge, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setTooltip({ edge, screenX: e.clientX, screenY: e.clientY })
+  }
+
+  const openEditFromTooltip = () => {
+    if (!tooltip) return
     setSelectedEdge({
-      edge,
-      label: edge.label,
-      note: edge.note || '',
-      color: edge.color,
+      edge: tooltip.edge,
+      label: tooltip.edge.label,
+      note: tooltip.edge.note || '',
+      color: tooltip.edge.color,
     })
+    setTooltip(null)
   }
 
   const handleEdgeSave = () => {
@@ -159,8 +179,8 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
 
   return (
     <div className="diagram-container">
-      <div className="diagram-svg-wrapper">
-        <svg viewBox={`0 0 ${width} ${height}`} className="diagram-svg">
+      <div className="diagram-svg-wrapper" onClick={() => setTooltip(null)}>
+        <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="diagram-svg">
           <defs>
             <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="var(--primary)" />
@@ -184,44 +204,34 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
 
           {/* Edges */}
           {edges.map((edge, i) => {
-            const nodeR = 30
-            const dx = edge.to.x - edge.from.x
-            const dy = edge.to.y - edge.from.y
-            const dist = Math.sqrt(dx * dx + dy * dy)
-            const nx = dx / dist
-            const ny = dy / dist
-            // Offset start/end points perpendicular to line direction
-            const x1 = edge.from.x + nx * nodeR + edge.perpX * edge.lineOffset
-            const y1 = edge.from.y + ny * nodeR + edge.perpY * edge.lineOffset
-            const x2 = edge.to.x - nx * nodeR + edge.perpX * edge.lineOffset
-            const y2 = edge.to.y - ny * nodeR + edge.perpY * edge.lineOffset
-            const isSelected = selectedEdge?.edge.charId === edge.charId && selectedEdge?.edge.relIndex === edge.relIndex
+            const isActive = tooltip?.edge.charId === edge.charId && tooltip?.edge.relIndex === edge.relIndex
+            const pathD = `M ${edge.x1} ${edge.y1} Q ${edge.ctrlX} ${edge.ctrlY} ${edge.x2} ${edge.y2}`
 
             return (
               <g key={i}>
                 {/* Invisible thick line for easier clicking */}
                 <path
-                  d={`M ${x1} ${y1} Q ${edge.cx} ${edge.cy} ${x2} ${y2}`}
+                  d={pathD}
                   fill="none"
                   stroke="transparent"
                   strokeWidth="16"
                   style={{ cursor: 'pointer' }}
-                  onClick={() => handleEdgeClick(edge)}
+                  onClick={e => handleEdgeClick(edge, e)}
                 />
                 {/* Visible line */}
                 <path
-                  d={`M ${x1} ${y1} Q ${edge.cx} ${edge.cy} ${x2} ${y2}`}
+                  d={pathD}
                   fill="none"
                   stroke={edge.color}
-                  strokeWidth={isSelected ? 3.5 : 2}
-                  opacity={isSelected ? 1 : 0.7}
+                  strokeWidth={isActive ? 3.5 : 2}
+                  opacity={isActive ? 1 : 0.7}
                   style={{ cursor: 'pointer' }}
-                  onClick={() => handleEdgeClick(edge)}
+                  onClick={e => handleEdgeClick(edge, e)}
                   markerEnd={`url(#arrow-${i})`}
                 />
                 {/* Edge label */}
                 {edge.label && (
-                  <g style={{ cursor: 'pointer' }} onClick={() => handleEdgeClick(edge)}>
+                  <g style={{ cursor: 'pointer' }} onClick={e => handleEdgeClick(edge, e)}>
                     <rect
                       x={edge.lx - Math.min(edge.label.length * 5 + 4, 80)}
                       y={edge.ly - 10}
@@ -229,8 +239,8 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
                       height={20}
                       rx="4"
                       fill="white"
-                      stroke={isSelected ? edge.color : 'var(--border)'}
-                      strokeWidth={isSelected ? 2 : 1}
+                      stroke={isActive ? edge.color : 'var(--border)'}
+                      strokeWidth={isActive ? 2 : 1}
                       opacity="0.95"
                     />
                     <text
@@ -283,6 +293,35 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
           ))}
         </svg>
       </div>
+
+      {/* Edge tooltip (click to view) */}
+      {tooltip && (
+        <div className="edge-tooltip-overlay" onClick={() => setTooltip(null)}>
+          <div
+            className="edge-tooltip"
+            style={{
+              top: Math.min(tooltip.screenY + 8, window.innerHeight - 200),
+              left: Math.min(tooltip.screenX, window.innerWidth - 300),
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="edge-tooltip-header">
+              <span className="edge-tooltip-color" style={{ background: tooltip.edge.color }} />
+              <span className="edge-tooltip-names">
+                {tooltip.edge.from.char.name} → {tooltip.edge.to.char.name}
+              </span>
+            </div>
+            <div className="edge-tooltip-label">{tooltip.edge.label || '관계 설명 없음'}</div>
+            {tooltip.edge.note && (
+              <p className="edge-tooltip-note">{tooltip.edge.note}</p>
+            )}
+            <div className="edge-tooltip-actions">
+              <button className="btn btn--primary btn--sm" onClick={openEditFromTooltip}>수정</button>
+              <button className="btn btn--ghost-sm" onClick={() => setTooltip(null)}>닫기</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edge edit popup */}
       {selectedEdge && (

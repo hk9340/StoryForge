@@ -27,6 +27,11 @@ export default function TimelineTab({
   const [isAdding, setIsAdding] = useState(false)
   const [showSnapshot, setShowSnapshot] = useState(false)
 
+  const handleFilterChange = (chapterId: string | null) => {
+    setFilterChapterId(chapterId)
+    closeSidePanel()
+  }
+
   const filteredEvents = filterChapterId
     ? timelineEvents.filter(e => e.chapterId === filterChapterId)
     : timelineEvents
@@ -116,13 +121,13 @@ export default function TimelineTab({
           <h2>타임라인</h2>
           <span className="section-header-badge">&#128337; {timelineEvents.length}개 사건</span>
         </div>
-        <p className="section-header-hint">챕터별 사건 흐름을 플로우차트로 관리합니다. 사건을 클릭하면 편집할 수 있습니다.</p>
+        <p className="section-header-hint">챕터별 사건 흐름을 플로우차트로 관리합니다. 사건을 클릭하면 편집할 수 있으며, 특정 챕터를 선택하면 해당 시점의 관계도 스냅샷을 생성/관리할 수 있습니다.</p>
       </div>
 
       <TimelineFilterBar
         chapters={chapters}
         selectedChapterId={filterChapterId}
-        onFilterChange={setFilterChapterId}
+        onFilterChange={handleFilterChange}
         onAddEvent={handleAddEvent}
         onShowSnapshot={handleShowSnapshot}
         snapshotAvailable={filterChapterId ? chapterSnapshots.some(s => s.chapterId === filterChapterId) : false}

@@ -52,6 +52,7 @@ export default function WorkDetail() {
 
   // Character tab state
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterNote | null>(null)
+  const [charDetailTab, setCharDetailTab] = useState<'info' | 'relations'>('info')
   const [characters, setCharacters] = useState(work?.characters || [])
   const [expandedCharacters, setExpandedCharacters] = useState<Set<string>>(new Set())
 
@@ -662,7 +663,7 @@ export default function WorkDetail() {
             </div>
             <RelationDiagram
               characters={characters}
-              onSelectCharacter={char => setSelectedCharacter(char)}
+              onSelectCharacter={char => { setSelectedCharacter(char); setCharDetailTab('relations') }}
               onUpdateRelation={(charId, relIndex, updates) => {
                 setCharacters(prev => prev.map(c => {
                   if (c.id !== charId) return c
@@ -771,10 +772,12 @@ export default function WorkDetail() {
       {/* Character Detail Overlay */}
       {selectedCharacter && (
         <CharacterDetail
+          key={selectedCharacter.id + charDetailTab}
           character={selectedCharacter}
           work={{ ...work, characters }}
           isNew={!characters.some(c => c.id === selectedCharacter.id)}
-          onClose={() => setSelectedCharacter(null)}
+          defaultTab={charDetailTab}
+          onClose={() => { setSelectedCharacter(null); setCharDetailTab('info') }}
           onSave={updated => {
             setCharacters(prev => {
               const exists = prev.some(c => c.id === updated.id)

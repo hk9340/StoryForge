@@ -8,6 +8,7 @@ interface Props {
   onClose: () => void
   onSave: (updated: CharacterNote) => void
   isNew?: boolean
+  defaultTab?: 'info' | 'relations'
 }
 
 const COLOR_PALETTE = [
@@ -16,9 +17,9 @@ const COLOR_PALETTE = [
   '#FD79A8', '#55EFC4', '#74B9FF', '#DFE6E9', '#2D3436',
 ]
 
-export default function CharacterDetail({ character, work, onClose, onSave, isNew }: Props) {
+export default function CharacterDetail({ character, work, onClose, onSave, isNew, defaultTab }: Props) {
   const [form, setForm] = useState({ ...character })
-  const [activeTab, setActiveTab] = useState<'info' | 'relations'>('info')
+  const [activeTab, setActiveTab] = useState<'info' | 'relations'>(defaultTab || 'info')
   const [saved, setSaved] = useState(false)
   const [expandedRelation, setExpandedRelation] = useState<number | null>(null)
 

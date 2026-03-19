@@ -27,7 +27,10 @@ export default function TimelineTab({
   const [isAdding, setIsAdding] = useState(false)
   const [showSnapshot, setShowSnapshot] = useState(false)
 
-  const handleFilterChange = (chapterId: string | null) => {
+  const handleFilterChange = async (chapterId: string | null) => {
+    if ((isAdding || selectedEventId) && !showSnapshot) {
+      if (!await confirm('수정사항이 저장되지 않았습니다. 챕터를 전환하시겠습니까?')) return
+    }
     setFilterChapterId(chapterId)
     closeSidePanel()
   }

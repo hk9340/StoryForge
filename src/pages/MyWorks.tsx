@@ -1,19 +1,21 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { SAMPLE_WORKS, type Work } from '../data/sampleData'
 import './MyWorks.css'
 
 export default function MyWorks() {
   const { user } = useAuth()
+  const confirm = useConfirm()
   const navigate = useNavigate()
   const [works, setWorks] = useState<Work[]>(SAMPLE_WORKS)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  const deleteWork = (e: React.MouseEvent, workId: string) => {
+  const deleteWork = async (e: React.MouseEvent, workId: string) => {
     e.preventDefault()
     e.stopPropagation()
-    if (window.confirm('이 작품을 삭제하시겠습니까?')) {
+    if (await confirm('이 작품을 삭제하시겠습니까?')) {
       setWorks(prev => prev.filter(w => w.id !== workId))
     }
   }

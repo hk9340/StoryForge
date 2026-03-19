@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote, type Chapter } from '../data/sampleData'
 import CharacterDetail from '../components/CharacterDetail'
 import RelationDiagram from '../components/RelationDiagram'
@@ -24,6 +25,7 @@ interface GlossaryTerm {
 export default function WorkDetail() {
   const { id } = useParams()
   const { user } = useAuth()
+  const confirm = useConfirm()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<Tab>('write')
   const [activeChapter, setActiveChapter] = useState(0)
@@ -99,18 +101,18 @@ export default function WorkDetail() {
     setHasChanges(true)
   }
 
-  const deleteChapter = (e: React.MouseEvent, chapterId: string) => {
+  const deleteChapter = async (e: React.MouseEvent, chapterId: string) => {
     e.stopPropagation()
-    if (!window.confirm('이 챕터를 삭제하시겠습니까?')) return
+    if (!await confirm('이 챕터를 삭제하시겠습니까?')) return
     const idx = chapters.findIndex(c => c.id === chapterId)
     setChapters(prev => prev.filter(c => c.id !== chapterId))
     if (activeChapter >= idx && activeChapter > 0) setActiveChapter(activeChapter - 1)
     markChanged()
   }
 
-  const deleteCharacter = (e: React.MouseEvent, charId: string) => {
+  const deleteCharacter = async (e: React.MouseEvent, charId: string) => {
     e.stopPropagation()
-    if (!window.confirm('이 캐릭터를 삭제하시겠습니까?')) return
+    if (!await confirm('이 캐릭터를 삭제하시겠습니까?')) return
     setCharacters(prev => prev.filter(c => c.id !== charId))
     markChanged()
   }
@@ -608,7 +610,7 @@ export default function WorkDetail() {
                             <span className="folder-name">{folder.name}</span>
                             <span className="folder-count">{currentFolderNoteCount(folder.id)}개 노트</span>
                           </div>
-                          <button className="delete-btn-sm" onClick={e => { e.stopPropagation(); if (window.confirm('이 폴더를 삭제하시겠습니까?')) markChanged() }} title="폴더 삭제">&#8854;</button>
+                          <button className="delete-btn-sm" onClick={async e => { e.stopPropagation(); if (await confirm('이 폴더를 삭제하시겠습니까?')) markChanged() }} title="폴더 삭제">&#8854;</button>
                         </div>
                       ))}
                     </div>
@@ -629,7 +631,7 @@ export default function WorkDetail() {
                               <span className="note-item-preview">{note.content.slice(0, 50)}...</span>
                               <span className="note-item-date">수정: {note.updatedAt}</span>
                             </div>
-                            <button className="delete-btn-sm" onClick={e => { e.stopPropagation(); if (window.confirm('이 노트를 삭제하시겠습니까?')) markChanged() }} title="노트 삭제">&#8854;</button>
+                            <button className="delete-btn-sm" onClick={async e => { e.stopPropagation(); if (await confirm('이 노트를 삭제하시겠습니까?')) markChanged() }} title="노트 삭제">&#8854;</button>
                           </div>
                         ))}
                       </div>
@@ -729,8 +731,8 @@ export default function WorkDetail() {
                       <span className="glossary-item-term">{g.term}</span>
                       <span className="glossary-item-desc">{g.description}</span>
                     </div>
-                    <button className="delete-btn-sm" onClick={() => {
-                      if (window.confirm(`"${g.term}" 용어를 삭제하시겠습니까?`)) {
+                    <button className="delete-btn-sm" onClick={async () => {
+                      if (await confirm(`"${g.term}" 용어를 삭제하시겠습니까?`)) {
                         setGlossary(prev => prev.filter(t => t.id !== g.id)); markChanged()
                       }
                     }} title="용어 삭제">&#8854;</button>

@@ -2,20 +2,22 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { useConfirm } from '../contexts/ConfirmContext'
 import { SAMPLE_WORKS, type Work } from '../data/sampleData'
 import './Dashboard.css'
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
   const { dark, toggle: toggleTheme } = useTheme()
+  const confirm = useConfirm()
   const navigate = useNavigate()
   const [works, setWorks] = useState<Work[]>(SAMPLE_WORKS)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  const deleteWork = (e: React.MouseEvent, workId: string) => {
+  const deleteWork = async (e: React.MouseEvent, workId: string) => {
     e.preventDefault()
     e.stopPropagation()
-    if (window.confirm('이 작품을 삭제하시겠습니까?')) {
+    if (await confirm('이 작품을 삭제하시겠습니까?')) {
       setWorks(prev => prev.filter(w => w.id !== workId))
     }
   }

@@ -1,6 +1,7 @@
 import { HashRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { ConfirmProvider } from './contexts/ConfirmContext'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import Landing from './pages/Landing'
@@ -16,6 +17,7 @@ import './App.css'
 function App() {
   return (
     <ThemeProvider>
+    <ConfirmProvider>
     <AuthProvider>
       <HashRouter>
         <Routes>
@@ -39,6 +41,7 @@ function App() {
         </Routes>
       </HashRouter>
     </AuthProvider>
+    </ConfirmProvider>
     </ThemeProvider>
   )
 }

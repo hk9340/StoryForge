@@ -16,12 +16,24 @@ export interface Chapter {
   wordCount: number
 }
 
+export interface CharacterRelation {
+  targetId: string
+  label: string
+  type: 'ally' | 'enemy' | 'family' | 'neutral' | 'romantic'
+}
+
 export interface CharacterNote {
   id: string
   name: string
   role: string
   description: string
   tags: string[]
+  age?: string
+  gender?: string
+  appearance?: string
+  personality?: string
+  backstory?: string
+  relations: CharacterRelation[]
 }
 
 export interface WorldNote {
@@ -114,6 +126,15 @@ export const SAMPLE_WORKS: Work[] = [
         role: '주인공',
         description: '16세 소녀. 별이 사라진 것을 유일하게 기억하는 인물. 호기심이 많고 용감하다.',
         tags: ['주인공', '인간', '소녀'],
+        age: '16세',
+        gender: '여성',
+        appearance: '검은 단발머리, 큰 눈, 항상 별 모양 목걸이를 하고 있다.',
+        personality: '호기심이 많고 용감하다. 다른 사람을 돕는 것을 좋아하지만, 때로는 무모할 정도로 앞으로 나선다.',
+        backstory: '할머니에게서 별의 이야기를 들으며 자랐다. 부모님은 마을 밖으로 나간 뒤 소식이 끊겼다.',
+        relations: [
+          { targetId: 'char-2', label: '동행자 / 안내자', type: 'ally' },
+          { targetId: 'char-3', label: '적대 관계', type: 'enemy' },
+        ],
       },
       {
         id: 'char-2',
@@ -121,6 +142,15 @@ export const SAMPLE_WORKS: Work[] = [
         role: '조력자',
         description: '숲에 사는 빛의 정령. 손바닥만 한 크기에 반투명한 날개를 가졌다. 유나를 별이 잠든 곳으로 안내한다.',
         tags: ['정령', '조력자', '빛'],
+        age: '약 300년',
+        gender: '무성',
+        appearance: '손바닥만 한 크기. 반투명한 날개, 옅은 금빛 몸체.',
+        personality: '낙천적이고 수다스럽다. 하지만 숲의 위기에 대해서는 심각하게 생각한다.',
+        backstory: '별의 숲에서 태어난 빛의 정령. 별이 사라진 후 유일하게 깨어있는 정령이다.',
+        relations: [
+          { targetId: 'char-1', label: '보호 대상 / 동행자', type: 'ally' },
+          { targetId: 'char-3', label: '과거 수호자의 잔영', type: 'enemy' },
+        ],
       },
       {
         id: 'char-3',
@@ -128,6 +158,15 @@ export const SAMPLE_WORKS: Work[] = [
         role: '적대자',
         description: '별빛을 삼키고 어둠을 퍼뜨리는 존재. 과거에는 별의 수호자였으나 타락했다.',
         tags: ['적대자', '보스', '어둠'],
+        age: '불명 (수천 년 추정)',
+        gender: '남성 (과거)',
+        appearance: '거대한 그림자 형태. 가끔 과거 수호자였던 모습이 비치기도 한다.',
+        personality: '냉혹하고 무감정하지만, 과거의 기억이 남아 가끔 동요한다.',
+        backstory: '원래는 별의 숲을 지키는 수호자 "아스텔"이었으나, 기억의 무게를 감당하지 못해 어둠에 빠졌다.',
+        relations: [
+          { targetId: 'char-1', label: '적대 / 과거 인연', type: 'enemy' },
+          { targetId: 'char-2', label: '과거 주종 관계', type: 'neutral' },
+        ],
       },
     ],
     worldFolders: [
@@ -206,6 +245,7 @@ export const SAMPLE_WORKS: Work[] = [
         role: '화자',
         description: '카페에서 일하며 손님들의 이야기를 관찰하고 상상하는 인물.',
         tags: ['화자', '바리스타'],
+        relations: [],
       },
     ],
     worldFolders: [

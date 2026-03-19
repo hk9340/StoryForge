@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { SAMPLE_WORKS, type WorldNote, type WorldFolder } from '../data/sampleData'
+import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote } from '../data/sampleData'
+import CharacterDetail from '../components/CharacterDetail'
+import RelationDiagram from '../components/RelationDiagram'
 import './WorkDetail.css'
 
-type Tab = 'write' | 'chapters' | 'characters' | 'world'
+type Tab = 'write' | 'chapters' | 'characters' | 'world' | 'relations'
 type SortMode = 'name' | 'created' | 'updated'
 
 export default function WorkDetail() {
@@ -18,6 +20,10 @@ export default function WorkDetail() {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<SortMode>('name')
   const [selectedNote, setSelectedNote] = useState<WorldNote | null>(null)
+
+  // Character tab state
+  const [selectedCharacter, setSelectedCharacter] = useState<CharacterNote | null>(null)
+  const [characters, setCharacters] = useState(SAMPLE_WORKS.find(w => w.id === id)?.characters || [])
 
   if (!user) { navigate('/login'); return null }
 
@@ -102,6 +108,9 @@ export default function WorkDetail() {
         <button className={`work-tab ${activeTab === 'world' ? 'active' : ''}`} onClick={() => { setActiveTab('world'); setSelectedNote(null) }}>
           &#127760; 세계관
         </button>
+        <button className={`work-tab ${activeTab === 'relations' ? 'active' : ''}`} onClick={() => setActiveTab('relations')}>
+          &#128268; 관계도
+        </button>
       </div>
 
       {/* Content */}
@@ -166,12 +175,21 @@ export default function WorkDetail() {
         {activeTab === 'characters' && (
           <div className="characters-view">
             <div className="chapters-header">
-              <h2>캐릭터 ({work.characters.length})</h2>
-              <button className="btn btn--primary btn--sm">+ 캐릭터 추가</button>
+              <h2>캐릭터 ({characters.length})</h2>
+              <div className="chapters-header-right">
+                <button className="btn btn--ghost-sm" onClick={() => setActiveTab('relations')}>
+                  &#128268; 관계도 보기
+                </button>
+                <button className="btn btn--primary btn--sm">+ 캐릭터 추가</button>
+              </div>
             </div>
             <div className="character-grid">
-              {work.characters.map(char => (
-                <div key={char.id} className="character-card">
+              {characters.map(char => (
+                <div
+                  key={char.id}
+                  className="character-card character-card--clickable"
+                  onClick={() => setSelectedCharacter(char)}
+                >
                   <div className="character-avatar">{char.name[0]}</div>
                   <h3>{char.name}</h3>
                   <span className="character-role">{char.role}</span>
@@ -181,6 +199,11 @@ export default function WorkDetail() {
                       <span key={tag} className="tag">{tag}</span>
                     ))}
                   </div>
+                  {char.relations.length > 0 && (
+                    <div className="character-relations-badge">
+                      &#128268; {char.relations.length}개 관계
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -315,7 +338,32 @@ export default function WorkDetail() {
             </div>
           </div>
         )}
+        {activeTab === 'relations' && (
+          <div className="relations-view">
+            <div className="chapters-header">
+              <h2>캐릭터 관계도</h2>
+              <p className="relations-hint">캐릭터를 클릭하면 상세 정보를 볼 수 있습니다</p>
+            </div>
+            <RelationDiagram
+              characters={characters}
+              onSelectCharacter={char => setSelectedCharacter(char)}
+            />
+          </div>
+        )}
       </div>
+
+      {/* Character Detail Overlay */}
+      {selectedCharacter && (
+        <CharacterDetail
+          character={selectedCharacter}
+          work={{ ...work, characters }}
+          onClose={() => setSelectedCharacter(null)}
+          onSave={updated => {
+            setCharacters(prev => prev.map(c => c.id === updated.id ? updated : c))
+            setSelectedCharacter(updated)
+          }}
+        />
+      )}
     </div>
   )
 }

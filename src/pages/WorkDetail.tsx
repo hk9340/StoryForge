@@ -591,7 +591,6 @@ export default function WorkDetail() {
           <div className="relations-view">
             <div className="chapters-header">
               <h2>캐릭터 관계도</h2>
-              <p className="relations-hint">캐릭터를 클릭하면 상세 정보, 관계선을 클릭하면 주석을 편집할 수 있습니다</p>
             </div>
             <RelationDiagram
               characters={characters}

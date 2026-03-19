@@ -106,30 +106,22 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
         const px = -uy  // perpendicular vector
         const py = ux
 
-        // For bidirectional: curve outward in opposite directions
+        // For bidirectional: two parallel straight lines offset perpendicular
         // For single: slight curve for aesthetics
-        let curveOffset: number
-        let startOffset: number
-        if (total > 1) {
-          curveOffset = idx === 0 ? 45 : -45
-          startOffset = idx === 0 ? 14 : -14
-        } else {
-          curveOffset = 20
-          startOffset = 0
-        }
+        const lineShift = total > 1 ? (idx === 0 ? 10 : -10) : 0
+        const curveAmount = total > 1 ? 0 : 20  // no curve for parallel, slight curve for single
 
-        const mx = (node.x + targetNode.x) / 2
-        const my = (node.y + targetNode.y) / 2
-        const ctrlX = mx + px * curveOffset
-        const ctrlY = my + py * curveOffset
+        const x1 = node.x + ux * nodeR + px * lineShift
+        const y1 = node.y + uy * nodeR + py * lineShift
+        const x2 = targetNode.x - ux * nodeR + px * lineShift
+        const y2 = targetNode.y - uy * nodeR + py * lineShift
 
-        // Offset start/end points perpendicular so lines leave node at different angles
-        const x1 = node.x + ux * nodeR + px * startOffset
-        const y1 = node.y + uy * nodeR + py * startOffset
-        const x2 = targetNode.x - ux * nodeR + px * startOffset
-        const y2 = targetNode.y - uy * nodeR + py * startOffset
+        const mx = (x1 + x2) / 2
+        const my = (y1 + y2) / 2
+        const ctrlX = mx + px * curveAmount
+        const ctrlY = my + py * curveAmount
 
-        // Label at t=0.35 on the bezier (closer to from-node)
+        // Label position: for bidirectional at 35% from source, single at center
         const t = total > 1 ? 0.35 : 0.5
         const t1 = 1 - t
         const lx = t1 * t1 * x1 + 2 * t1 * t * ctrlX + t * t * x2

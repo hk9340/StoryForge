@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
 import { SAMPLE_WORKS, type Work } from '../data/sampleData'
 import './Dashboard.css'
 
 export default function Dashboard() {
   const { user, logout } = useAuth()
+  const { dark, toggle: toggleTheme } = useTheme()
   const navigate = useNavigate()
   const [works, setWorks] = useState<Work[]>(SAMPLE_WORKS)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -49,6 +51,15 @@ export default function Dashboard() {
             <span className="sidebar-icon">&#128100;</span> 프로필
           </Link>
         </nav>
+
+        <div className="sidebar-theme-toggle" onClick={toggleTheme}>
+          <span className="sidebar-icon">{dark ? '\u{1F319}' : '\u{2600}\u{FE0F}'}</span>
+          <span>{dark ? '라이트 모드' : '다크 모드'}</span>
+          <label className="toggle-switch toggle-switch--sidebar">
+            <input type="checkbox" checked={dark} readOnly />
+            <span className="toggle-slider" />
+          </label>
+        </div>
 
         <div className="sidebar-user">
           <div className="sidebar-avatar">{user.name[0]}</div>

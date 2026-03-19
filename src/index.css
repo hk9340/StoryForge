@@ -20,6 +20,94 @@
   --serif: 'Noto Serif KR', Georgia, serif;
 }
 
+:root {
+  --card-bg: #FFFFFF;
+}
+
+[data-theme="dark"] {
+  --primary: #8B85FF;
+  --primary-dark: #6C63FF;
+  --primary-light: #A29BFE;
+  --accent: #FF7B93;
+  --text-primary: #E4E6E8;
+  --text-secondary: #A0A8B0;
+  --text-light: #6B7280;
+  --bg-primary: #1A1B2E;
+  --bg-secondary: #12132A;
+  --bg-dark: #0E0F1F;
+  --border: #2A2B40;
+  --card-bg: #222340;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Dark mode: override hardcoded white backgrounds */
+[data-theme="dark"] .sidebar,
+[data-theme="dark"] .work-topbar,
+[data-theme="dark"] .work-tabs,
+[data-theme="dark"] .editor-area,
+[data-theme="dark"] .chapter-sidebar,
+[data-theme="dark"] .chapter-card,
+[data-theme="dark"] .character-card,
+[data-theme="dark"] .char-accordion,
+[data-theme="dark"] .char-detail-panel,
+[data-theme="dark"] .world-header,
+[data-theme="dark"] .world-detail-panel,
+[data-theme="dark"] .world-folder-card,
+[data-theme="dark"] .world-note-item,
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .activity-list,
+[data-theme="dark"] .work-card,
+[data-theme="dark"] .myworks-card,
+[data-theme="dark"] .myworks-list-item,
+[data-theme="dark"] .myworks-topbar,
+[data-theme="dark"] .settings-dropdown,
+[data-theme="dark"] .relation-card,
+[data-theme="dark"] .edge-edit-panel,
+[data-theme="dark"] .diagram-svg-wrapper,
+[data-theme="dark"] .new-chapter-form,
+[data-theme="dark"] .profile-page .profile-card,
+[data-theme="dark"] .profile-page .stat-item,
+[data-theme="dark"] .auth-card,
+[data-theme="dark"] .newwork-card,
+[data-theme="dark"] header.header {
+  background: var(--card-bg);
+}
+
+[data-theme="dark"] .toggle-slider {
+  background: var(--border);
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] .delete-btn,
+[data-theme="dark"] .work-card .delete-btn,
+[data-theme="dark"] .myworks-card .delete-btn,
+[data-theme="dark"] .myworks-list-item .delete-btn {
+  background: rgba(34, 35, 64, 0.85);
+}
+
+[data-theme="dark"] .landing-hero,
+[data-theme="dark"] .landing-section {
+  background: var(--bg-primary);
+}
+
+[data-theme="dark"] .btn--primary {
+  background: var(--primary);
+  color: white;
+}
+
+[data-theme="dark"] .edge-edit-footer {
+  background: var(--bg-secondary);
+}
+
 * {
   margin: 0;
   padding: 0;

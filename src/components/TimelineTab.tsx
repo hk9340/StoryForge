@@ -30,7 +30,7 @@ export default function TimelineTab({
 
   const handleFilterChange = async (chapterId: string | null) => {
     if (editorDirty) {
-      if (!await confirm('수정사항이 저장되지 않았습니다. 챕터를 전환하시겠습니까?')) return
+      if (!await confirm('변경사항이 저장되지 않았습니다. 이동하시겠습니까?')) return
     }
     setFilterChapterId(chapterId)
     closeSidePanel()
@@ -93,16 +93,24 @@ export default function TimelineTab({
     markChanged()
   }
 
-  const handleSelectEvent = (id: string) => {
+  const handleSelectEvent = async (id: string) => {
+    if (editorDirty) {
+      if (!await confirm('변경사항이 저장되지 않았습니다. 이동하시겠습니까?')) return
+    }
     setSelectedEventId(id)
     setIsAdding(false)
     setShowSnapshot(false)
+    setEditorDirty(false)
   }
 
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
+    if (editorDirty) {
+      if (!await confirm('변경사항이 저장되지 않았습니다. 이동하시겠습니까?')) return
+    }
     setIsAdding(true)
     setSelectedEventId(null)
     setShowSnapshot(false)
+    setEditorDirty(false)
   }
 
   const handleShowSnapshot = () => {

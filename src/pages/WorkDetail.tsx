@@ -755,7 +755,12 @@ export default function WorkDetail() {
                           <div className="folder-icon" style={{ background: folder.color }}>&#128193;</div>
                           <div className="folder-info">
                             <span className="folder-name">{folder.name}</span>
-                            <span className="folder-count">{work.worldNotes.filter(n => n.folderId === folder.id).length}개 노트{work.worldFolders.some(f => f.parentId === folder.id) ? ` (하위 포함 ${currentFolderNoteCount(folder.id)})` : ''}</span>
+                            <span className="folder-count">
+                              {currentFolderNoteCount(folder.id)}개 노트
+                              {work.worldFolders.some(f => f.parentId === folder.id) && (
+                                <span className="folder-sub-count">(하위 {work.worldFolders.filter(f => f.parentId === folder.id).length}개 폴더)</span>
+                              )}
+                            </span>
                           </div>
                           <button className="delete-btn-sm" onClick={async e => { e.stopPropagation(); if (await confirm('이 폴더를 삭제하시겠습니까?')) markChanged() }} title="폴더 삭제">&#8854;</button>
                         </div>

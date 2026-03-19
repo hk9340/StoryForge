@@ -647,7 +647,7 @@ export default function WorkDetail() {
                           <div className="folder-icon" style={{ background: folder.color }}>&#128193;</div>
                           <div className="folder-info">
                             <span className="folder-name">{folder.name}</span>
-                            <span className="folder-count">{currentFolderNoteCount(folder.id)}개 노트</span>
+                            <span className="folder-count">{work.worldNotes.filter(n => n.folderId === folder.id).length}개 노트{work.worldFolders.some(f => f.parentId === folder.id) ? ` (하위 포함 ${currentFolderNoteCount(folder.id)})` : ''}</span>
                           </div>
                           <button className="delete-btn-sm" onClick={async e => { e.stopPropagation(); if (await confirm('이 폴더를 삭제하시겠습니까?')) markChanged() }} title="폴더 삭제">&#8854;</button>
                         </div>
@@ -685,7 +685,7 @@ export default function WorkDetail() {
                 <div className="world-detail-panel">
                   <div className="detail-panel-header"><h2>{selectedNote.title}</h2><button className="detail-close" onClick={() => setSelectedNote(null)}>&times;</button></div>
                   <div className="detail-panel-meta"><span>생성: {selectedNote.createdAt}</span><span>수정: {selectedNote.updatedAt}</span></div>
-                  <div className="detail-panel-body"><textarea className="detail-textarea" defaultValue={selectedNote.content} onChange={markChanged} placeholder="노트 내용을 작성하세요..." /></div>
+                  <div className="detail-panel-body"><textarea key={selectedNote.id} className="detail-textarea" defaultValue={selectedNote.content} onChange={markChanged} placeholder="노트 내용을 작성하세요..." /></div>
                 </div>
               )}
             </div>

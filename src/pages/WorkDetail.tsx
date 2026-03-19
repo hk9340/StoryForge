@@ -44,6 +44,7 @@ export default function WorkDetail() {
   // Character tab state
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterNote | null>(null)
   const [characters, setCharacters] = useState(work?.characters || [])
+  const [expandedCharacters, setExpandedCharacters] = useState<Set<string>>(new Set())
 
   // Scroll to new chapter form
   useEffect(() => {
@@ -79,6 +80,22 @@ export default function WorkDetail() {
     setShowNewChapterForm(false)
     setNewChapterTitle('')
     setHasChanges(true)
+  }
+
+  const deleteChapter = (e: React.MouseEvent, chapterId: string) => {
+    e.stopPropagation()
+    if (!window.confirm('이 챕터를 삭제하시겠습니까?')) return
+    const idx = chapters.findIndex(c => c.id === chapterId)
+    setChapters(prev => prev.filter(c => c.id !== chapterId))
+    if (activeChapter >= idx && activeChapter > 0) setActiveChapter(activeChapter - 1)
+    markChanged()
+  }
+
+  const deleteCharacter = (e: React.MouseEvent, charId: string) => {
+    e.stopPropagation()
+    if (!window.confirm('이 캐릭터를 삭제하시겠습니까?')) return
+    setCharacters(prev => prev.filter(c => c.id !== charId))
+    markChanged()
   }
 
   // World helpers
@@ -244,14 +261,15 @@ export default function WorkDetail() {
             <aside className="chapter-sidebar">
               <h3>챕터 목록</h3>
               {chapters.map((ch, i) => (
-                <button
+                <div
                   key={ch.id}
                   className={`chapter-item ${i === activeChapter ? 'active' : ''}`}
                   onClick={() => { setActiveChapter(i); setEditorContent(chapters[i].content) }}
                 >
                   <span className="chapter-title">{ch.title}</span>
                   <span className="chapter-words">{ch.wordCount}자</span>
-                </button>
+                  <button className="delete-btn-sm" onClick={e => deleteChapter(e, ch.id)} title="챕터 삭제">&#128465;</button>
+                </div>
               ))}
               <button className="chapter-item chapter-add" onClick={openNewChapterForm}>+ 새 챕터</button>
             </aside>
@@ -327,6 +345,7 @@ export default function WorkDetail() {
                         <span>수정: {ch.updatedAt}</span>
                       </div>
                     </div>
+                    <button className="delete-btn" onClick={e => deleteChapter(e, ch.id)} title="챕터 삭제">&#128465;</button>
                   </div>
                 )
               })}
@@ -351,33 +370,99 @@ export default function WorkDetail() {
                     tags: [],
                     relations: [],
                   }
-                  setSelectedCharacter(newChar)
+                  setCharacters(prev => [...prev, newChar])
+                  setExpandedCharacters(prev => new Set(prev).add(newChar.id))
+                  markChanged()
                 }}>+ 캐릭터 추가</button>
               </div>
             </div>
-            <div className="character-grid">
-              {characters.map(char => (
-                <div
-                  key={char.id}
-                  className="character-card character-card--clickable"
-                  onClick={() => setSelectedCharacter(char)}
-                >
-                  <div className="character-avatar">{char.name[0]}</div>
-                  <h3>{char.name}</h3>
-                  <span className="character-role">{char.role}</span>
-                  <p>{char.description}</p>
-                  <div className="character-tags">
-                    {char.tags.map(tag => (
-                      <span key={tag} className="tag">{tag}</span>
-                    ))}
-                  </div>
-                  {char.relations.length > 0 && (
-                    <div className="character-relations-badge">
-                      &#128268; {char.relations.length}개 관계
+            <div className="character-accordion-list">
+              {characters.map(char => {
+                const isExpanded = expandedCharacters.has(char.id)
+                const toggleExpand = () => {
+                  setExpandedCharacters(prev => {
+                    const next = new Set(prev)
+                    if (next.has(char.id)) next.delete(char.id)
+                    else next.add(char.id)
+                    return next
+                  })
+                }
+                const updateChar = (updates: Partial<CharacterNote>) => {
+                  setCharacters(prev => prev.map(c => c.id === char.id ? { ...c, ...updates } : c))
+                  markChanged()
+                }
+                return (
+                  <div key={char.id} className={`char-accordion ${isExpanded ? 'expanded' : ''}`}>
+                    <div className="char-accordion-header" onClick={toggleExpand}>
+                      <div className="char-accordion-avatar">{char.name?.[0] || '?'}</div>
+                      <div className="char-accordion-summary">
+                        <span className="char-accordion-name">{char.name || '이름 없음'}</span>
+                        <span className="char-accordion-role">{char.role || '역할 미지정'}</span>
+                      </div>
+                      <div className="char-accordion-meta">
+                        {char.tags.length > 0 && (
+                          <div className="char-accordion-tags">
+                            {char.tags.slice(0, 3).map(tag => (
+                              <span key={tag} className="tag">{tag}</span>
+                            ))}
+                          </div>
+                        )}
+                        {char.relations.length > 0 && (
+                          <span className="character-relations-badge">&#128268; {char.relations.length}</span>
+                        )}
+                      </div>
+                      <button className="delete-btn-sm" onClick={e => deleteCharacter(e, char.id)} title="캐릭터 삭제">&#128465;</button>
+                      <span className="char-accordion-toggle">{isExpanded ? '▲' : '▼'}</span>
                     </div>
-                  )}
-                </div>
-              ))}
+                    {isExpanded && (
+                      <div className="char-accordion-body">
+                        <div className="char-accordion-section">
+                          <div className="char-form-row">
+                            <div className="char-form-group">
+                              <label>이름</label>
+                              <input value={char.name} onChange={e => updateChar({ name: e.target.value })} placeholder="캐릭터 이름" />
+                            </div>
+                            <div className="char-form-group">
+                              <label>역할</label>
+                              <input value={char.role} onChange={e => updateChar({ role: e.target.value })} placeholder="예: 주인공, 조력자" />
+                            </div>
+                          </div>
+                          <div className="char-form-row">
+                            <div className="char-form-group">
+                              <label>나이</label>
+                              <input value={char.age || ''} onChange={e => updateChar({ age: e.target.value })} placeholder="예: 16세" />
+                            </div>
+                            <div className="char-form-group">
+                              <label>성별</label>
+                              <input value={char.gender || ''} onChange={e => updateChar({ gender: e.target.value })} placeholder="예: 여성" />
+                            </div>
+                          </div>
+                          <div className="char-form-group">
+                            <label>외형</label>
+                            <textarea value={char.appearance || ''} onChange={e => updateChar({ appearance: e.target.value })} placeholder="캐릭터의 외형을 묘사하세요..." rows={2} />
+                          </div>
+                          <div className="char-form-group">
+                            <label>성격</label>
+                            <textarea value={char.personality || ''} onChange={e => updateChar({ personality: e.target.value })} placeholder="캐릭터의 성격을 설명하세요..." rows={2} />
+                          </div>
+                          <div className="char-form-group">
+                            <label>설명</label>
+                            <textarea value={char.description} onChange={e => updateChar({ description: e.target.value })} placeholder="캐릭터에 대한 간단한 설명..." rows={2} />
+                          </div>
+                          <div className="char-form-group">
+                            <label>배경 이야기</label>
+                            <textarea value={char.backstory || ''} onChange={e => updateChar({ backstory: e.target.value })} placeholder="캐릭터의 과거와 배경..." rows={3} />
+                          </div>
+                          <div className="char-form-group">
+                            <label>태그</label>
+                            <input value={char.tags.join(', ')} onChange={e => updateChar({ tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })} placeholder="쉼표로 구분 (예: 주인공, 인간, 소녀)" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}
@@ -426,13 +511,14 @@ export default function WorkDetail() {
                     <h3 className="world-section-title">폴더</h3>
                     <div className="world-folder-grid">
                       {getSubFolders(currentFolderId).map(folder => (
-                        <button key={folder.id} className="world-folder-card" onClick={() => { setCurrentFolderId(folder.id); setSelectedNote(null) }}>
+                        <div key={folder.id} className="world-folder-card" onClick={() => { setCurrentFolderId(folder.id); setSelectedNote(null) }}>
                           <div className="folder-icon" style={{ background: folder.color }}>&#128193;</div>
                           <div className="folder-info">
                             <span className="folder-name">{folder.name}</span>
                             <span className="folder-count">{currentFolderNoteCount(folder.id)}개 노트</span>
                           </div>
-                        </button>
+                          <button className="delete-btn-sm" onClick={e => { e.stopPropagation(); if (window.confirm('이 폴더를 삭제하시겠습니까?')) markChanged() }} title="폴더 삭제">&#128465;</button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -445,14 +531,15 @@ export default function WorkDetail() {
                     ) : (
                       <div className="world-note-list">
                         {getNotesInFolder(currentFolderId).map(note => (
-                          <button key={note.id} className={`world-note-item ${selectedNote?.id === note.id ? 'active' : ''}`} onClick={() => setSelectedNote(note)}>
+                          <div key={note.id} className={`world-note-item ${selectedNote?.id === note.id ? 'active' : ''}`} onClick={() => setSelectedNote(note)}>
                             <div className="note-item-icon">&#128196;</div>
                             <div className="note-item-info">
                               <span className="note-item-title">{note.title}</span>
                               <span className="note-item-preview">{note.content.slice(0, 50)}...</span>
                               <span className="note-item-date">수정: {note.updatedAt}</span>
                             </div>
-                          </button>
+                            <button className="delete-btn-sm" onClick={e => { e.stopPropagation(); if (window.confirm('이 노트를 삭제하시겠습니까?')) markChanged() }} title="노트 삭제">&#128465;</button>
+                          </div>
                         ))}
                       </div>
                     )}

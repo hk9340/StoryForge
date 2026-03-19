@@ -188,6 +188,41 @@
   flex-shrink: 0;
 }
 
+/* ===== Delete Button ===== */
+.myworks-card,
+.myworks-list-item {
+  position: relative;
+}
+
+.myworks-card .delete-btn,
+.myworks-list-item .delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  font-size: 1rem;
+  color: var(--text-light);
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  z-index: 2;
+}
+
+.myworks-card .delete-btn:hover,
+.myworks-list-item .delete-btn:hover {
+  background: #fff0f0;
+  color: #d63031;
+  opacity: 1;
+}
+
+.myworks-card:hover .delete-btn,
+.myworks-list-item:hover .delete-btn {
+  opacity: 0.7;
+}
+
 @media (max-width: 640px) {
   .myworks-grid {
     grid-template-columns: 1fr;

@@ -58,8 +58,20 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
   }, [characters])
 
   const edges = useMemo<Edge[]>(() => {
-    const seen = new Set<string>()
     const result: Edge[] = []
+    const pairCount = new Map<string, number>()
+
+    // Count how many edges exist per pair to offset them
+    for (const node of nodes) {
+      for (const rel of node.char.relations) {
+        const targetNode = nodes.find(n => n.char.id === rel.targetId)
+        if (!targetNode) continue
+        const pairKey = [node.char.id, targetNode.char.id].sort().join('-')
+        pairCount.set(pairKey, (pairCount.get(pairKey) || 0) + 1)
+      }
+    }
+
+    const pairIndex = new Map<string, number>()
 
     for (const node of nodes) {
       for (let ri = 0; ri < node.char.relations.length; ri++) {
@@ -67,9 +79,10 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
         const targetNode = nodes.find(n => n.char.id === rel.targetId)
         if (!targetNode) continue
 
-        const edgeKey = [node.char.id, targetNode.char.id].sort().join('-')
-        if (seen.has(edgeKey)) continue
-        seen.add(edgeKey)
+        const pairKey = [node.char.id, targetNode.char.id].sort().join('-')
+        const total = pairCount.get(pairKey) || 1
+        const idx = pairIndex.get(pairKey) || 0
+        pairIndex.set(pairKey, idx + 1)
 
         const dx = targetNode.x - node.x
         const dy = targetNode.y - node.y
@@ -79,6 +92,10 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
         const nx = dx / dist
         const ny = dy / dist
 
+        // Offset: if two lines, first goes +offset, second goes -offset
+        const offsetBase = total > 1 ? 25 : 20
+        const offset = total > 1 ? (idx === 0 ? offsetBase : -offsetBase) : offsetBase
+
         result.push({
           from: node,
           to: targetNode,
@@ -87,8 +104,8 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
           note: rel.note,
           charId: node.char.id,
           relIndex: ri,
-          cx: mx + ny * 20,
-          cy: my - nx * 20,
+          cx: mx + ny * offset,
+          cy: my - nx * offset,
         })
       }
     }
@@ -130,6 +147,20 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
               <stop offset="0%" stopColor="var(--primary)" />
               <stop offset="100%" stopColor="var(--accent)" />
             </linearGradient>
+            {edges.map((edge, i) => (
+              <marker
+                key={`arrow-${i}`}
+                id={`arrow-${i}`}
+                viewBox="0 0 10 10"
+                refX="8"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 1 L 8 5 L 0 9 z" fill={edge.color} opacity="0.7" />
+              </marker>
+            ))}
           </defs>
 
           {/* Edges */}
@@ -166,6 +197,7 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
                   opacity={isSelected ? 1 : 0.7}
                   style={{ cursor: 'pointer' }}
                   onClick={() => handleEdgeClick(edge)}
+                  markerEnd={`url(#arrow-${i})`}
                 />
                 {/* Edge label */}
                 {edge.label && (
@@ -241,7 +273,7 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
                 <span className="edge-color-dot" style={{ background: selectedEdge.color }} />
                 <h3>
                   {characters.find(c => c.id === selectedEdge.edge.from.char.id)?.name}
-                  {' ↔ '}
+                  {' → '}
                   {characters.find(c => c.id === selectedEdge.edge.to.char.id)?.name}
                 </h3>
               </div>

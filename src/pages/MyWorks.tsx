@@ -7,8 +7,16 @@ import './MyWorks.css'
 export default function MyWorks() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [works] = useState<Work[]>(SAMPLE_WORKS)
+  const [works, setWorks] = useState<Work[]>(SAMPLE_WORKS)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
+  const deleteWork = (e: React.MouseEvent, workId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (window.confirm('이 작품을 삭제하시겠습니까?')) {
+      setWorks(prev => prev.filter(w => w.id !== workId))
+    }
+  }
 
   if (!user) { navigate('/login'); return null }
 
@@ -44,6 +52,7 @@ export default function MyWorks() {
                     <span>{work.chapters.length}챕터 &middot; {work.totalWords.toLocaleString()}자</span>
                   </div>
                 </div>
+                <button className="delete-btn" onClick={e => deleteWork(e, work.id)} title="작품 삭제">&#128465;</button>
               </Link>
             ))}
           </div>
@@ -61,6 +70,7 @@ export default function MyWorks() {
                   <span>{work.genre}</span>
                   <span>{work.totalWords.toLocaleString()}자</span>
                 </div>
+                <button className="delete-btn" onClick={e => deleteWork(e, work.id)} title="작품 삭제">&#128465;</button>
               </Link>
             ))}
           </div>

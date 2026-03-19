@@ -61,17 +61,12 @@ export default function NewWork() {
 
             <div className="newwork-group">
               <label>장르</label>
-              <div className="genre-chips">
+              <select value={genre} onChange={e => setGenre(e.target.value)}>
+                <option value="">장르를 선택하세요</option>
                 {GENRES.map(g => (
-                  <button
-                    key={g}
-                    className={`genre-chip ${genre === g ? 'selected' : ''}`}
-                    onClick={() => setGenre(g)}
-                  >
-                    {g}
-                  </button>
+                  <option key={g} value={g}>{g}</option>
                 ))}
-              </div>
+              </select>
             </div>
 
             <div className="newwork-group">

@@ -344,32 +344,330 @@
   color: var(--text-secondary);
 }
 
-/* ===== World Notes ===== */
-.world-notes {
+/* ===== World - Header ===== */
+.world-view {
+  padding: 0;
+  max-width: 100%;
+}
+
+.world-header {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.world-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.9rem;
+}
+
+.breadcrumb-item {
+  background: none;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.breadcrumb-item:hover {
+  background: var(--bg-secondary);
+  color: var(--primary);
+}
+
+.breadcrumb-item.current {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.breadcrumb-sep {
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.world-header-right {
+  display: flex;
+  align-items: center;
   gap: 12px;
 }
 
-.world-note-card {
+.sort-control {
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  background: white;
-  padding: 20px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
-.world-note-icon {
-  font-size: 1.3rem;
+.sort-control select {
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-family: var(--sans);
+  background: white;
+  cursor: pointer;
+  outline: none;
+}
+
+.sort-control select:focus {
+  border-color: var(--primary);
+}
+
+.btn--ghost-sm {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  background: none;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  font-family: var(--sans);
+  transition: all 0.2s;
+}
+
+.btn--ghost-sm:hover {
+  background: rgba(108, 99, 255, 0.05);
+}
+
+/* ===== World - Layout ===== */
+.world-layout {
+  display: flex;
+  height: calc(100vh - 170px);
+}
+
+.world-listing {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.world-listing.has-detail {
+  max-width: 50%;
+}
+
+.world-section {
+  margin-bottom: 32px;
+}
+
+.world-section-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+
+/* ===== World - Folders ===== */
+.world-folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.world-folder-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+  font-family: var(--sans);
+}
+
+.world-folder-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.folder-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+.folder-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.folder-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.folder-count {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+/* ===== World - Note List ===== */
+.world-note-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.world-note-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+  font-family: var(--sans);
+}
+
+.world-note-item:hover {
+  border-color: var(--primary);
+}
+
+.world-note-item.active {
+  border-color: var(--primary);
+  background: rgba(108, 99, 255, 0.03);
+  box-shadow: inset 3px 0 0 var(--primary);
+}
+
+.note-item-icon {
+  font-size: 1.1rem;
+  margin-top: 2px;
   flex-shrink: 0;
 }
 
-.world-note-card p {
+.note-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.note-item-title {
   font-size: 0.9rem;
-  line-height: 1.6;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.note-item-preview {
+  font-size: 0.8rem;
   color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-item-date {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+/* ===== World - Detail Panel ===== */
+.world-detail-panel {
+  width: 50%;
+  background: white;
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 0;
+}
+
+.detail-panel-header h2 {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.detail-close {
+  background: none;
+  font-size: 1.5rem;
+  color: var(--text-light);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.detail-close:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.detail-panel-meta {
+  padding: 8px 24px 16px;
+  display: flex;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-panel-body {
+  flex: 1;
+  padding: 0;
+}
+
+.detail-textarea {
+  width: 100%;
+  height: 100%;
+  padding: 20px 24px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+.detail-textarea::placeholder {
+  color: var(--text-light);
+}
+
+/* ===== World - Empty States ===== */
+.world-empty,
+.world-empty-root {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-secondary);
+}
+
+.world-empty p,
+.world-empty-root p {
+  margin-bottom: 16px;
+  font-size: 0.9rem;
 }
 
 /* ===== Not Found ===== */
@@ -407,5 +705,30 @@
 
   .character-grid {
     grid-template-columns: 1fr;
+  }
+
+  .world-layout {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .world-listing.has-detail {
+    max-width: 100%;
+  }
+
+  .world-detail-panel {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    min-height: 400px;
+  }
+
+  .world-folder-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .world-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

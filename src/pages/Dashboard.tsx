@@ -28,18 +28,18 @@ export default function Dashboard() {
         </div>
 
         <nav className="sidebar-nav">
-          <a href="#" className="sidebar-link active">
+          <Link to="/dashboard" className="sidebar-link active">
             <span className="sidebar-icon">&#128200;</span> 대시보드
-          </a>
-          <a href="#" className="sidebar-link">
+          </Link>
+          <a href="#works-section" className="sidebar-link" onClick={() => setSidebarOpen(false)}>
             <span className="sidebar-icon">&#128214;</span> 내 작품
           </a>
-          <a href="#" className="sidebar-link">
+          <Link to={`/works/${works[0]?.id}`} className="sidebar-link">
             <span className="sidebar-icon">&#128221;</span> 새 작품 쓰기
-          </a>
-          <a href="#" className="sidebar-link">
+          </Link>
+          <Link to="/profile" className="sidebar-link">
             <span className="sidebar-icon">&#128100;</span> 프로필
-          </a>
+          </Link>
         </nav>
 
         <div className="sidebar-user">

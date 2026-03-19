@@ -24,6 +24,23 @@ export interface CharacterNote {
   tags: string[]
 }
 
+export interface WorldNote {
+  id: string
+  title: string
+  content: string
+  folderId: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface WorldFolder {
+  id: string
+  name: string
+  color: string
+  parentId: string | null
+  createdAt: string
+}
+
 export interface Work {
   id: string
   title: string
@@ -32,7 +49,8 @@ export interface Work {
   coverColor: string
   chapters: Chapter[]
   characters: CharacterNote[]
-  worldNotes: string[]
+  worldFolders: WorldFolder[]
+  worldNotes: WorldNote[]
   createdAt: string
   updatedAt: string
   totalWords: number
@@ -112,10 +130,48 @@ export const SAMPLE_WORKS: Work[] = [
         tags: ['적대자', '보스', '어둠'],
       },
     ],
+    worldFolders: [
+      { id: 'wf-1', name: '장소', color: '#6C63FF', parentId: null, createdAt: '2026-03-15' },
+      { id: 'wf-2', name: '마법 체계', color: '#FF6584', parentId: null, createdAt: '2026-03-16' },
+      { id: 'wf-3', name: '역사/전설', color: '#00B894', parentId: null, createdAt: '2026-03-17' },
+      { id: 'wf-4', name: '별의 숲 세부', color: '#A29BFE', parentId: 'wf-1', createdAt: '2026-03-18' },
+    ],
     worldNotes: [
-      '별의 숲: 별들이 지칠 때 쉬어가는 신비로운 장소. 일반인은 입구를 찾을 수 없다.',
-      '별빛 기억: 별이 가진 기억의 힘. 세상의 중요한 기억들을 보존하는 역할을 한다.',
-      '그림자 영역: 별빛이 사라진 곳에 생기는 어둠의 공간. 이곳에 들어가면 기억을 잃는다.',
+      {
+        id: 'wn-1', title: '별의 숲', folderId: 'wf-1',
+        content: '별들이 지칠 때 쉬어가는 신비로운 장소. 일반인은 입구를 찾을 수 없다. 숲 입구에는 안개가 항상 끼어있으며, 나뭇잎이 은은한 빛을 발한다.',
+        createdAt: '2026-03-15', updatedAt: '2026-03-19',
+      },
+      {
+        id: 'wn-2', title: '유나의 마을', folderId: 'wf-1',
+        content: '숲 근처의 작은 마을. 주민 약 200명. 별이 사라진 후에도 평범하게 생활하고 있다. 마을 사람들은 별의 존재를 잊은 듯하다.',
+        createdAt: '2026-03-15', updatedAt: '2026-03-17',
+      },
+      {
+        id: 'wn-3', title: '별빛 기억', folderId: 'wf-2',
+        content: '별이 가진 기억의 힘. 세상의 중요한 기억들을 보존하는 역할을 한다. 별빛이 사라지면 관련된 기억도 함께 희미해진다.',
+        createdAt: '2026-03-16', updatedAt: '2026-03-18',
+      },
+      {
+        id: 'wn-4', title: '그림자 영역', folderId: 'wf-2',
+        content: '별빛이 사라진 곳에 생기는 어둠의 공간. 이곳에 들어가면 기억을 잃는다. 그림자 왕의 힘이 강해질수록 영역이 확장된다.',
+        createdAt: '2026-03-16', updatedAt: '2026-03-19',
+      },
+      {
+        id: 'wn-5', title: '별의 수호자 전설', folderId: 'wf-3',
+        content: '오래전, 별의 수호자가 숲을 지키고 있었다. 그러나 어둠의 유혹에 빠져 타락했고, 지금의 그림자 왕이 되었다는 전설이 전해진다.',
+        createdAt: '2026-03-17', updatedAt: '2026-03-17',
+      },
+      {
+        id: 'wn-6', title: '숲의 입구 묘사', folderId: 'wf-4',
+        content: '마을 끝자락에 위치. 오래된 나무 표지판에 "돌아올 수 없는 길"이 새겨져 있다. 안개 너머로 발광하는 나뭇잎이 보인다.',
+        createdAt: '2026-03-18', updatedAt: '2026-03-18',
+      },
+      {
+        id: 'wn-7', title: '정령들의 쉼터', folderId: 'wf-4',
+        content: '숲 깊은 곳에 있는 작은 공터. 빛의 정령들이 모여 사는 곳. 루미의 고향이기도 하다.',
+        createdAt: '2026-03-18', updatedAt: '2026-03-19',
+      },
     ],
     createdAt: '2026-03-15',
     updatedAt: '2026-03-19',
@@ -152,8 +208,16 @@ export const SAMPLE_WORKS: Work[] = [
         tags: ['화자', '바리스타'],
       },
     ],
+    worldFolders: [
+      { id: 'wf-10', name: '장소', color: '#FF6584', parentId: null, createdAt: '2026-03-18' },
+      { id: 'wf-11', name: '인물 관계', color: '#6C63FF', parentId: null, createdAt: '2026-03-18' },
+    ],
     worldNotes: [
-      '카페 "오후 세시": 도심 골목에 위치한 작은 카페. 나무 인테리어, 재즈 음악이 흘러나온다.',
+      {
+        id: 'wn-10', title: '카페 "오후 세시"', folderId: 'wf-10',
+        content: '도심 골목에 위치한 작은 카페. 나무 인테리어, 재즈 음악이 흘러나온다. 창가 좌석 3개, 테이블 5개.',
+        createdAt: '2026-03-18', updatedAt: '2026-03-18',
+      },
     ],
     createdAt: '2026-03-18',
     updatedAt: '2026-03-18',

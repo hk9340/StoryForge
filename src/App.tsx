@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import WorkDetail from './pages/WorkDetail'
+import Profile from './pages/Profile'
 import './App.css'
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/works/:id" element={<WorkDetail />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </HashRouter>
     </AuthProvider>

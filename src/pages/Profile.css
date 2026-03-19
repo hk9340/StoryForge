@@ -1,0 +1,231 @@
+.profile-page {
+  min-height: 100vh;
+  background: var(--bg-secondary);
+}
+
+.profile-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  background: white;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-topbar .back-btn {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.profile-topbar .back-btn:hover {
+  color: var(--primary);
+}
+
+.profile-tabs {
+  display: flex;
+  gap: 0;
+}
+
+.profile-tab {
+  background: none;
+  padding: 16px 20px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+}
+
+.profile-tab.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 500;
+}
+
+.profile-main {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+/* Profile Card */
+.profile-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  text-align: center;
+  border: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.profile-avatar-lg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 auto 16px;
+}
+
+.profile-card h1 {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+
+.profile-bio {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.profile-stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.profile-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-stat-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.profile-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+/* Works */
+.profile-section h2 {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+}
+
+.profile-works {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-work-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: white;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+
+.profile-work-item:hover {
+  border-color: var(--primary);
+}
+
+.profile-work-color {
+  width: 8px;
+  height: 40px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.profile-work-info h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.profile-work-info span {
+  font-size: 0.8rem;
+  color: var(--text-light);
+}
+
+/* Settings */
+.settings-section {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  border: 1px solid var(--border);
+}
+
+.settings-section h2 {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  margin-bottom: 24px;
+}
+
+.settings-group {
+  margin-bottom: 20px;
+}
+
+.settings-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+}
+
+.settings-group input,
+.settings-group textarea,
+.settings-group select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-family: var(--sans);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.settings-group input:focus,
+.settings-group textarea:focus,
+.settings-group select:focus {
+  border-color: var(--primary);
+}
+
+.settings-group input:disabled {
+  background: var(--bg-secondary);
+  color: var(--text-light);
+}
+
+.settings-hint {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 4px;
+  display: block;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.btn--danger {
+  background: #ff4757;
+  color: white;
+  border-radius: var(--radius-sm);
+}
+
+.btn--danger:hover {
+  background: #e84118;
+}

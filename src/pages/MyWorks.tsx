@@ -11,6 +11,11 @@ export default function MyWorks() {
   const navigate = useNavigate()
   const [works, setWorks] = useState<Work[]>(SAMPLE_WORKS)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const filteredWorks = searchQuery.trim()
+    ? works.filter(w => w.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    : works
 
   const deleteWork = async (e: React.MouseEvent, workId: string) => {
     e.preventDefault()
@@ -36,11 +41,19 @@ export default function MyWorks() {
       </header>
 
       <main className="myworks-main">
-        <h1>내 작품 ({works.length})</h1>
+        <div className="search-bar">
+          <h1>내 작품 ({filteredWorks.length})</h1>
+          <input
+            className="search-input"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="작품 제목으로 검색..."
+          />
+        </div>
 
         {viewMode === 'grid' ? (
           <div className="myworks-grid">
-            {works.map(work => (
+            {filteredWorks.map(work => (
               <Link to={`/works/${work.id}`} key={work.id} className="myworks-card">
                 <div className="myworks-cover" style={work.coverImage ? { backgroundImage: `url(${work.coverImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: work.coverColor }}>
                   {!work.coverImage && <span className="myworks-cover-icon">&#128214;</span>}
@@ -60,7 +73,7 @@ export default function MyWorks() {
           </div>
         ) : (
           <div className="myworks-list">
-            {works.map(work => (
+            {filteredWorks.map(work => (
               <Link to={`/works/${work.id}`} key={work.id} className="myworks-list-item">
                 <div className="myworks-list-color" style={work.coverImage ? { backgroundImage: `url(${work.coverImage})`, backgroundSize: 'cover' } : { background: work.coverColor }} />
                 <div className="myworks-list-info">

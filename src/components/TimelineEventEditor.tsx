@@ -15,6 +15,7 @@ export default function TimelineEventEditor({ event, chapters, characters, onSav
   const [timeLabel, setTimeLabel] = useState(event?.timeLabel || '')
   const [chapterId, setChapterId] = useState(event?.chapterId || chapters[0]?.id || '')
   const [characterIds, setCharacterIds] = useState<string[]>(event?.characterIds || [])
+  const [charSearch, setCharSearch] = useState('')
 
   useEffect(() => {
     setTitle(event?.title || '')
@@ -87,9 +88,17 @@ export default function TimelineEventEditor({ event, chapters, characters, onSav
           </div>
         </div>
         <div className="tl-editor-group">
-          <label>등장인물</label>
+          <label>등장인물 ({characterIds.length}명 선택)</label>
+          <input
+            className="search-input search-input--sm"
+            value={charSearch}
+            onChange={e => setCharSearch(e.target.value)}
+            placeholder="캐릭터 이름 검색..."
+          />
           <div className="tl-editor-char-list">
-            {characters.map(c => (
+            {characters
+              .filter(c => !charSearch.trim() || c.name.toLowerCase().includes(charSearch.toLowerCase()))
+              .map(c => (
               <label key={c.id} className={`tl-char-check ${characterIds.includes(c.id) ? 'checked' : ''}`}>
                 <input
                   type="checkbox"

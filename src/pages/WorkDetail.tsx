@@ -57,6 +57,10 @@ export default function WorkDetail() {
   const [characters, setCharacters] = useState(work?.characters || [])
   const [expandedCharacters, setExpandedCharacters] = useState<Set<string>>(new Set())
 
+  // Search state
+  const [chapterSearch, setChapterSearch] = useState('')
+  const [characterSearch, setCharacterSearch] = useState('')
+
   // Glossary state
   const [glossary, setGlossary] = useState<GlossaryTerm[]>([
     { id: 'g1', term: '별의 숲', description: '별들이 지칠 때 쉬어가는 신비로운 장소. 일반인은 입구를 찾을 수 없다.', pinned: true },
@@ -405,9 +409,17 @@ export default function WorkDetail() {
           <div className="chapters-view">
             <div className="chapters-header">
               <h2>전체 챕터 ({chapters.length})</h2>
-              <button className="btn btn--primary btn--sm" onClick={() => { setShowNewChapterForm(true); setNewChapterTitle('') }}>
-                + 새 챕터 추가
-              </button>
+              <div className="chapters-header-right">
+                <input
+                  className="search-input search-input--inline"
+                  value={chapterSearch}
+                  onChange={e => setChapterSearch(e.target.value)}
+                  placeholder="챕터명 검색..."
+                />
+                <button className="btn btn--primary btn--sm" onClick={() => { setShowNewChapterForm(true); setNewChapterTitle('') }}>
+                  + 새 챕터 추가
+                </button>
+              </div>
             </div>
             <div className="chapters-list">
               {/* New Chapter Form - top (역순이므로 최신이 위) */}
@@ -434,7 +446,7 @@ export default function WorkDetail() {
               )}
 
               {/* 챕터 목록 역순 (최신이 위) */}
-              {[...chapters].reverse().map((ch) => {
+              {[...chapters].reverse().filter(ch => !chapterSearch.trim() || ch.title.toLowerCase().includes(chapterSearch.toLowerCase())).map((ch) => {
                 const origIndex = chapters.indexOf(ch)
                 return (
                   <div key={ch.id} className="chapter-card" onClick={() => { setActiveChapter(origIndex); setActiveTab('write'); setEditorContent(ch.content) }}>
@@ -460,6 +472,12 @@ export default function WorkDetail() {
             <div className="chapters-header">
               <h2>캐릭터 ({characters.length})</h2>
               <div className="chapters-header-right">
+                <input
+                  className="search-input search-input--inline"
+                  value={characterSearch}
+                  onChange={e => setCharacterSearch(e.target.value)}
+                  placeholder="캐릭터 이름 검색..."
+                />
                 <button className="btn btn--ghost-sm" onClick={() => setActiveTab('relations')}>
                   &#128268; 관계도 보기
                 </button>
@@ -479,7 +497,7 @@ export default function WorkDetail() {
               </div>
             </div>
             <div className="character-accordion-list">
-              {characters.map(char => {
+              {characters.filter(char => !characterSearch.trim() || char.name.toLowerCase().includes(characterSearch.toLowerCase())).map(char => {
                 const isExpanded = expandedCharacters.has(char.id)
                 const toggleExpand = () => {
                   setExpandedCharacters(prev => {

@@ -1255,6 +1255,43 @@
   }
 }
 
+/* ===== Search Input ===== */
+.search-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.search-input {
+  padding: 8px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-family: var(--sans);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 220px;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.08);
+}
+
+.search-input--inline {
+  width: 180px;
+}
+
+.search-input--sm {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+}
+
 /* ===== Delete Buttons ===== */
 .delete-btn {
   position: absolute;

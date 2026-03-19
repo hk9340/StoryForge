@@ -137,6 +137,12 @@
   background: var(--card-bg);
 }
 
+[data-theme="dark"] .search-input {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
 [data-theme="dark"] .tl-card,
 [data-theme="dark"] .tl-editor,
 [data-theme="dark"] .tl-snapshot {

@@ -1,26 +1,11 @@
-import { useMemo } from 'react'
-import type { CharacterNote } from '../data/sampleData'
+import { useMemo, useState } from 'react'
+import type { CharacterNote, CharacterRelation } from '../data/sampleData'
 import './RelationDiagram.css'
 
 interface Props {
   characters: CharacterNote[]
   onSelectCharacter: (char: CharacterNote) => void
-}
-
-const RELATION_COLORS: Record<string, string> = {
-  ally: '#00B894',
-  enemy: '#FF6584',
-  family: '#6C63FF',
-  romantic: '#E17055',
-  neutral: '#B2BEC3',
-}
-
-const RELATION_LABELS: Record<string, string> = {
-  ally: '우호',
-  enemy: '적대',
-  family: '가족',
-  romantic: '연인',
-  neutral: '중립',
+  onUpdateRelation?: (charId: string, relIndex: number, updates: Partial<CharacterRelation>) => void
 }
 
 interface NodePos {
@@ -29,11 +14,35 @@ interface NodePos {
   char: CharacterNote
 }
 
-export default function RelationDiagram({ characters, onSelectCharacter }: Props) {
+interface Edge {
+  from: NodePos
+  to: NodePos
+  label: string
+  color: string
+  note?: string
+  charId: string
+  relIndex: number
+  cx: number
+  cy: number
+}
+
+interface SelectedEdge {
+  edge: Edge
+  label: string
+  note: string
+  color: string
+}
+
+const COLOR_PALETTE = [
+  '#FF6584', '#FF9F43', '#FECA57', '#00B894', '#00CEC9',
+  '#6C63FF', '#A29BFE', '#E17055', '#B2BEC3', '#636E72',
+]
+
+export default function RelationDiagram({ characters, onSelectCharacter, onUpdateRelation }: Props) {
   const width = 700
   const height = 500
+  const [selectedEdge, setSelectedEdge] = useState<SelectedEdge | null>(null)
 
-  // Position nodes in a circle
   const nodes = useMemo<NodePos[]>(() => {
     const cx = width / 2
     const cy = height / 2
@@ -48,13 +57,13 @@ export default function RelationDiagram({ characters, onSelectCharacter }: Props
     })
   }, [characters])
 
-  // Collect edges (deduplicated)
-  const edges = useMemo(() => {
+  const edges = useMemo<Edge[]>(() => {
     const seen = new Set<string>()
-    const result: { from: NodePos; to: NodePos; label: string; type: string }[] = []
+    const result: Edge[] = []
 
     for (const node of nodes) {
-      for (const rel of node.char.relations) {
+      for (let ri = 0; ri < node.char.relations.length; ri++) {
+        const rel = node.char.relations[ri]
         const targetNode = nodes.find(n => n.char.id === rel.targetId)
         if (!targetNode) continue
 
@@ -62,16 +71,45 @@ export default function RelationDiagram({ characters, onSelectCharacter }: Props
         if (seen.has(edgeKey)) continue
         seen.add(edgeKey)
 
+        const dx = targetNode.x - node.x
+        const dy = targetNode.y - node.y
+        const mx = (node.x + targetNode.x) / 2
+        const my = (node.y + targetNode.y) / 2
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        const nx = dx / dist
+        const ny = dy / dist
+
         result.push({
           from: node,
           to: targetNode,
           label: rel.label,
-          type: rel.type,
+          color: rel.color,
+          note: rel.note,
+          charId: node.char.id,
+          relIndex: ri,
+          cx: mx + ny * 20,
+          cy: my - nx * 20,
         })
       }
     }
     return result
   }, [nodes])
+
+  const handleEdgeClick = (edge: Edge) => {
+    setSelectedEdge({
+      edge,
+      label: edge.label,
+      note: edge.note || '',
+      color: edge.color,
+    })
+  }
+
+  const handleEdgeSave = () => {
+    if (!selectedEdge || !onUpdateRelation) return
+    const { edge, label, note, color } = selectedEdge
+    onUpdateRelation(edge.charId, edge.relIndex, { label, note, color })
+    setSelectedEdge(null)
+  }
 
   if (characters.length === 0) {
     return (
@@ -83,93 +121,88 @@ export default function RelationDiagram({ characters, onSelectCharacter }: Props
 
   return (
     <div className="diagram-container">
-      <div className="diagram-legend">
-        {Object.entries(RELATION_LABELS).map(([key, label]) => (
-          <span key={key} className="legend-item">
-            <span className="legend-line" style={{ background: RELATION_COLORS[key] }} />
-            {label}
-          </span>
-        ))}
-      </div>
+      <p className="diagram-tip">캐릭터 노드를 클릭하면 상세 정보, 관계선을 클릭하면 주석을 편집할 수 있습니다.</p>
 
       <div className="diagram-svg-wrapper">
-        <svg
-          viewBox={`0 0 ${width} ${height}`}
-          className="diagram-svg"
-        >
+        <svg viewBox={`0 0 ${width} ${height}`} className="diagram-svg">
           <defs>
-            {Object.entries(RELATION_COLORS).map(([key, color]) => (
-              <marker
-                key={key}
-                id={`arrow-${key}`}
-                viewBox="0 0 10 6"
-                refX="10"
-                refY="3"
-                markerWidth="8"
-                markerHeight="6"
-                orient="auto"
-              >
-                <path d="M0,0 L10,3 L0,6 Z" fill={color} />
-              </marker>
-            ))}
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="var(--primary)" />
+              <stop offset="100%" stopColor="var(--accent)" />
+            </linearGradient>
           </defs>
 
           {/* Edges */}
           {edges.map((edge, i) => {
-            const color = RELATION_COLORS[edge.type] || '#B2BEC3'
+            const nodeR = 30
             const dx = edge.to.x - edge.from.x
             const dy = edge.to.y - edge.from.y
             const dist = Math.sqrt(dx * dx + dy * dy)
             const nx = dx / dist
             const ny = dy / dist
-            const nodeR = 30
             const x1 = edge.from.x + nx * nodeR
             const y1 = edge.from.y + ny * nodeR
             const x2 = edge.to.x - nx * nodeR
             const y2 = edge.to.y - ny * nodeR
-            const mx = (x1 + x2) / 2
-            const my = (y1 + y2) / 2
-
-            // Curve offset for better readability
-            const cx = mx + ny * 20
-            const cy = my - nx * 20
+            const isSelected = selectedEdge?.edge.charId === edge.charId && selectedEdge?.edge.relIndex === edge.relIndex
 
             return (
               <g key={i}>
+                {/* Invisible thick line for easier clicking */}
                 <path
-                  d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
+                  d={`M ${x1} ${y1} Q ${edge.cx} ${edge.cy} ${x2} ${y2}`}
                   fill="none"
-                  stroke={color}
-                  strokeWidth="2"
-                  strokeDasharray={edge.type === 'neutral' ? '6,4' : 'none'}
-                  opacity="0.7"
+                  stroke="transparent"
+                  strokeWidth="16"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleEdgeClick(edge)}
+                />
+                {/* Visible line */}
+                <path
+                  d={`M ${x1} ${y1} Q ${edge.cx} ${edge.cy} ${x2} ${y2}`}
+                  fill="none"
+                  stroke={edge.color}
+                  strokeWidth={isSelected ? 3.5 : 2}
+                  opacity={isSelected ? 1 : 0.7}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleEdgeClick(edge)}
                 />
                 {/* Edge label */}
                 {edge.label && (
-                  <g>
+                  <g style={{ cursor: 'pointer' }} onClick={() => handleEdgeClick(edge)}>
                     <rect
-                      x={cx - edge.label.length * 5 - 4}
-                      y={cy - 10}
-                      width={edge.label.length * 10 + 8}
+                      x={edge.cx - Math.min(edge.label.length * 5 + 4, 80)}
+                      y={edge.cy - 10}
+                      width={Math.min(edge.label.length * 10 + 8, 160)}
                       height={20}
                       rx="4"
                       fill="white"
-                      stroke={color}
-                      strokeWidth="1"
+                      stroke={isSelected ? edge.color : 'var(--border)'}
+                      strokeWidth={isSelected ? 2 : 1}
                       opacity="0.95"
                     />
                     <text
-                      x={cx}
-                      y={cy + 4}
+                      x={edge.cx}
+                      y={edge.cy + 4}
                       textAnchor="middle"
-                      fill={color}
+                      fill={edge.color}
                       fontSize="11"
                       fontWeight="600"
                       fontFamily="var(--sans)"
                     >
-                      {edge.label}
+                      {edge.label.length > 14 ? edge.label.slice(0, 14) + '…' : edge.label}
                     </text>
                   </g>
+                )}
+                {/* Note indicator */}
+                {edge.note && (
+                  <circle
+                    cx={edge.cx + Math.min(edge.label.length * 5 + 8, 84)}
+                    cy={edge.cy}
+                    r="5"
+                    fill={edge.color}
+                    opacity="0.6"
+                  />
                 )}
               </g>
             )
@@ -183,70 +216,87 @@ export default function RelationDiagram({ characters, onSelectCharacter }: Props
               onClick={() => onSelectCharacter(node.char)}
               style={{ cursor: 'pointer' }}
             >
-              {/* Glow */}
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r={34}
-                fill="none"
-                stroke="var(--primary)"
-                strokeWidth="1"
-                opacity="0.15"
-              />
-              {/* Circle */}
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r={30}
-                fill="url(#grad)"
-                stroke="white"
-                strokeWidth="3"
-              />
-              <defs>
-                <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="var(--primary)" />
-                  <stop offset="100%" stopColor="var(--accent)" />
-                </linearGradient>
-              </defs>
-              {/* Initial */}
-              <text
-                x={node.x}
-                y={node.y + 6}
-                textAnchor="middle"
-                fill="white"
-                fontSize="18"
-                fontWeight="700"
-                fontFamily="var(--sans)"
-              >
+              <circle cx={node.x} cy={node.y} r={34} fill="none" stroke="var(--primary)" strokeWidth="1" opacity="0.15" />
+              <circle cx={node.x} cy={node.y} r={30} fill="url(#grad)" stroke="white" strokeWidth="3" />
+              <text x={node.x} y={node.y + 6} textAnchor="middle" fill="white" fontSize="18" fontWeight="700" fontFamily="var(--sans)">
                 {node.char.name[0]}
               </text>
-              {/* Name label */}
-              <text
-                x={node.x}
-                y={node.y + 50}
-                textAnchor="middle"
-                fill="var(--text-primary)"
-                fontSize="13"
-                fontWeight="600"
-                fontFamily="var(--sans)"
-              >
+              <text x={node.x} y={node.y + 50} textAnchor="middle" fill="var(--text-primary)" fontSize="13" fontWeight="600" fontFamily="var(--sans)">
                 {node.char.name}
               </text>
-              {/* Role label */}
-              <text
-                x={node.x}
-                y={node.y + 65}
-                textAnchor="middle"
-                fill="var(--text-light)"
-                fontSize="10"
-                fontFamily="var(--sans)"
-              >
+              <text x={node.x} y={node.y + 65} textAnchor="middle" fill="var(--text-light)" fontSize="10" fontFamily="var(--sans)">
                 {node.char.role}
               </text>
             </g>
           ))}
         </svg>
       </div>
+
+      {/* Edge edit popup */}
+      {selectedEdge && (
+        <div className="edge-edit-overlay" onClick={() => setSelectedEdge(null)}>
+          <div className="edge-edit-panel" onClick={e => e.stopPropagation()}>
+            <div className="edge-edit-header">
+              <div className="edge-edit-title">
+                <span className="edge-color-dot" style={{ background: selectedEdge.color }} />
+                <h3>
+                  {characters.find(c => c.id === selectedEdge.edge.from.char.id)?.name}
+                  {' ↔ '}
+                  {characters.find(c => c.id === selectedEdge.edge.to.char.id)?.name}
+                </h3>
+              </div>
+              <button className="edge-edit-close" onClick={() => setSelectedEdge(null)}>&times;</button>
+            </div>
+
+            <div className="edge-edit-body">
+              <div className="edge-form-group">
+                <label>관계 이름</label>
+                <input
+                  value={selectedEdge.label}
+                  onChange={e => setSelectedEdge({ ...selectedEdge, label: e.target.value })}
+                  placeholder="관계를 설명하는 짧은 이름..."
+                />
+              </div>
+
+              <div className="edge-form-group">
+                <label>라인 색상</label>
+                <div className="color-picker">
+                  {COLOR_PALETTE.map(c => (
+                    <button
+                      key={c}
+                      className={`color-swatch ${selectedEdge.color === c ? 'selected' : ''}`}
+                      style={{ background: c }}
+                      onClick={() => setSelectedEdge({ ...selectedEdge, color: c })}
+                    />
+                  ))}
+                  <input
+                    type="color"
+                    value={selectedEdge.color}
+                    onChange={e => setSelectedEdge({ ...selectedEdge, color: e.target.value })}
+                    className="color-custom"
+                    title="직접 색상 선택"
+                  />
+                </div>
+              </div>
+
+              <div className="edge-form-group">
+                <label>상세 메모</label>
+                <textarea
+                  value={selectedEdge.note}
+                  onChange={e => setSelectedEdge({ ...selectedEdge, note: e.target.value })}
+                  placeholder="이 관계에 대한 메모를 자유롭게 작성하세요..."
+                  rows={5}
+                />
+              </div>
+            </div>
+
+            <div className="edge-edit-footer">
+              <button className="btn btn--ghost-sm" onClick={() => setSelectedEdge(null)}>취소</button>
+              <button className="btn btn--primary btn--sm" onClick={handleEdgeSave}>저장</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

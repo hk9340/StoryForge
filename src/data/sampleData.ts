@@ -19,7 +19,8 @@ export interface Chapter {
 export interface CharacterRelation {
   targetId: string
   label: string
-  type: 'ally' | 'enemy' | 'family' | 'neutral' | 'romantic'
+  color: string
+  note?: string
 }
 
 export interface CharacterNote {
@@ -132,8 +133,8 @@ export const SAMPLE_WORKS: Work[] = [
         personality: '호기심이 많고 용감하다. 다른 사람을 돕는 것을 좋아하지만, 때로는 무모할 정도로 앞으로 나선다.',
         backstory: '할머니에게서 별의 이야기를 들으며 자랐다. 부모님은 마을 밖으로 나간 뒤 소식이 끊겼다.',
         relations: [
-          { targetId: 'char-2', label: '동행자 / 안내자', type: 'ally' },
-          { targetId: 'char-3', label: '적대 관계', type: 'enemy' },
+          { targetId: 'char-2', label: '동행자 / 안내자', color: '#00B894', note: '숲에서 처음 만남. 루미가 유나를 별이 잠든 곳으로 안내한다.' },
+          { targetId: 'char-3', label: '적대 관계', color: '#FF6584', note: '그림자 왕은 유나의 여정을 방해한다. 하지만 과거 인연이 있을 수도.' },
         ],
       },
       {
@@ -148,8 +149,8 @@ export const SAMPLE_WORKS: Work[] = [
         personality: '낙천적이고 수다스럽다. 하지만 숲의 위기에 대해서는 심각하게 생각한다.',
         backstory: '별의 숲에서 태어난 빛의 정령. 별이 사라진 후 유일하게 깨어있는 정령이다.',
         relations: [
-          { targetId: 'char-1', label: '보호 대상 / 동행자', type: 'ally' },
-          { targetId: 'char-3', label: '과거 수호자의 잔영', type: 'enemy' },
+          { targetId: 'char-1', label: '보호 대상 / 동행자', color: '#00B894', note: '유나를 별의 숲으로 안내하는 역할. 유나를 지키고 싶어한다.' },
+          { targetId: 'char-3', label: '과거 수호자의 잔영', color: '#FF6584', note: '그림자 왕의 본래 모습을 기억하고 있는 유일한 존재.' },
         ],
       },
       {
@@ -164,8 +165,8 @@ export const SAMPLE_WORKS: Work[] = [
         personality: '냉혹하고 무감정하지만, 과거의 기억이 남아 가끔 동요한다.',
         backstory: '원래는 별의 숲을 지키는 수호자 "아스텔"이었으나, 기억의 무게를 감당하지 못해 어둠에 빠졌다.',
         relations: [
-          { targetId: 'char-1', label: '적대 / 과거 인연', type: 'enemy' },
-          { targetId: 'char-2', label: '과거 주종 관계', type: 'neutral' },
+          { targetId: 'char-1', label: '적대 / 과거 인연', color: '#FF6584', note: '유나의 할머니와 관련이 있을 수 있다는 암시.' },
+          { targetId: 'char-2', label: '과거 주종 관계', color: '#B2BEC3', note: '수호자 시절 루미를 만들어낸 존재. 지금은 기억하지 못한다.' },
         ],
       },
     ],

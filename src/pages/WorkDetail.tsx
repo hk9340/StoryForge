@@ -180,7 +180,17 @@ export default function WorkDetail() {
                 <button className="btn btn--ghost-sm" onClick={() => setActiveTab('relations')}>
                   &#128268; 관계도 보기
                 </button>
-                <button className="btn btn--primary btn--sm">+ 캐릭터 추가</button>
+                <button className="btn btn--primary btn--sm" onClick={() => {
+                  const newChar: CharacterNote = {
+                    id: `char-new-${Date.now()}`,
+                    name: '',
+                    role: '',
+                    description: '',
+                    tags: [],
+                    relations: [],
+                  }
+                  setSelectedCharacter(newChar)
+                }}>+ 캐릭터 추가</button>
               </div>
             </div>
             <div className="character-grid">
@@ -347,6 +357,14 @@ export default function WorkDetail() {
             <RelationDiagram
               characters={characters}
               onSelectCharacter={char => setSelectedCharacter(char)}
+              onUpdateRelation={(charId, relIndex, updates) => {
+                setCharacters(prev => prev.map(c => {
+                  if (c.id !== charId) return c
+                  const newRels = [...c.relations]
+                  newRels[relIndex] = { ...newRels[relIndex], ...updates }
+                  return { ...c, relations: newRels }
+                }))
+              }}
             />
           </div>
         )}
@@ -357,9 +375,14 @@ export default function WorkDetail() {
         <CharacterDetail
           character={selectedCharacter}
           work={{ ...work, characters }}
+          isNew={!characters.some(c => c.id === selectedCharacter.id)}
           onClose={() => setSelectedCharacter(null)}
           onSave={updated => {
-            setCharacters(prev => prev.map(c => c.id === updated.id ? updated : c))
+            setCharacters(prev => {
+              const exists = prev.some(c => c.id === updated.id)
+              if (exists) return prev.map(c => c.id === updated.id ? updated : c)
+              return [...prev, updated]
+            })
             setSelectedCharacter(updated)
           }}
         />

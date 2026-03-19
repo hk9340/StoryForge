@@ -7,20 +7,20 @@ interface Props {
   work: Work
   onClose: () => void
   onSave: (updated: CharacterNote) => void
+  isNew?: boolean
 }
 
-const RELATION_TYPES: { value: CharacterRelation['type']; label: string; color: string }[] = [
-  { value: 'ally', label: '우호', color: '#00B894' },
-  { value: 'enemy', label: '적대', color: '#FF6584' },
-  { value: 'family', label: '가족', color: '#6C63FF' },
-  { value: 'romantic', label: '연인', color: '#E17055' },
-  { value: 'neutral', label: '중립', color: '#B2BEC3' },
+const COLOR_PALETTE = [
+  '#FF6584', '#FF9F43', '#FECA57', '#00B894', '#00CEC9',
+  '#6C63FF', '#A29BFE', '#E17055', '#B2BEC3', '#636E72',
+  '#FD79A8', '#55EFC4', '#74B9FF', '#DFE6E9', '#2D3436',
 ]
 
-export default function CharacterDetail({ character, work, onClose, onSave }: Props) {
+export default function CharacterDetail({ character, work, onClose, onSave, isNew }: Props) {
   const [form, setForm] = useState({ ...character })
   const [activeTab, setActiveTab] = useState<'info' | 'relations'>('info')
   const [saved, setSaved] = useState(false)
+  const [expandedRelation, setExpandedRelation] = useState<number | null>(null)
 
   const update = <K extends keyof CharacterNote>(key: K, value: CharacterNote[K]) => {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -38,37 +38,39 @@ export default function CharacterDetail({ character, work, onClose, onSave }: Pr
       c => c.id !== character.id && !form.relations.some(r => r.targetId === c.id)
     )
     if (available.length === 0) return
-    update('relations', [
-      ...form.relations,
-      { targetId: available[0].id, label: '', type: 'neutral' as const },
-    ])
+    const newRel: CharacterRelation = {
+      targetId: available[0].id,
+      label: '',
+      color: '#6C63FF',
+    }
+    update('relations', [...form.relations, newRel])
+    setExpandedRelation(form.relations.length)
   }
 
-  const updateRelation = (index: number, field: keyof CharacterRelation, value: string) => {
+  const updateRelation = (index: number, updates: Partial<CharacterRelation>) => {
     const updated = [...form.relations]
-    updated[index] = { ...updated[index], [field]: value }
+    updated[index] = { ...updated[index], ...updates }
     update('relations', updated)
   }
 
   const removeRelation = (index: number) => {
     update('relations', form.relations.filter((_, i) => i !== index))
+    setExpandedRelation(null)
   }
-
-  const getRelTypeInfo = (type: string) =>
-    RELATION_TYPES.find(t => t.value === type) || RELATION_TYPES[4]
 
   return (
     <div className="char-detail-overlay" onClick={onClose}>
       <div className="char-detail-panel" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="char-detail-header">
-          <div className="char-detail-avatar">{form.name[0]}</div>
+          <div className="char-detail-avatar">{form.name?.[0] || '?'}</div>
           <div className="char-detail-title">
             <input
               className="char-name-input"
               value={form.name}
               onChange={e => update('name', e.target.value)}
               placeholder="캐릭터 이름"
+              autoFocus={isNew}
             />
             <input
               className="char-role-input"
@@ -79,7 +81,7 @@ export default function CharacterDetail({ character, work, onClose, onSave }: Pr
           </div>
           <div className="char-detail-actions">
             <button className="btn btn--primary btn--sm" onClick={handleSave}>
-              {saved ? '저장됨!' : '저장'}
+              {saved ? '저장됨!' : isNew ? '추가' : '저장'}
             </button>
             <button className="char-close-btn" onClick={onClose}>&times;</button>
           </div>
@@ -171,7 +173,7 @@ export default function CharacterDetail({ character, work, onClose, onSave }: Pr
             <div className="char-relations">
               <div className="char-relations-header">
                 <p className="char-relations-desc">
-                  다른 캐릭터와의 관계를 설정하세요. 관계도 탭에서 다이어그램으로 확인할 수 있습니다.
+                  다른 캐릭터와의 관계를 자유롭게 설정하세요.
                 </p>
                 <button className="btn btn--ghost-sm" onClick={addRelation}>+ 관계 추가</button>
               </div>
@@ -185,43 +187,76 @@ export default function CharacterDetail({ character, work, onClose, onSave }: Pr
                 <div className="char-relations-list">
                   {form.relations.map((rel, i) => {
                     const target = work.characters.find(c => c.id === rel.targetId)
-                    const typeInfo = getRelTypeInfo(rel.type)
+                    const isExpanded = expandedRelation === i
                     return (
-                      <div key={i} className="relation-item">
-                        <div className="relation-item-left">
-                          <div className="relation-target-avatar" style={{ background: typeInfo.color }}>
-                            {target?.name[0] || '?'}
+                      <div key={i} className={`relation-card ${isExpanded ? 'expanded' : ''}`}>
+                        {/* Compact row */}
+                        <div className="relation-card-header" onClick={() => setExpandedRelation(isExpanded ? null : i)}>
+                          <div className="relation-color-dot" style={{ background: rel.color }} />
+                          <div className="relation-card-summary">
+                            <span className="relation-card-target">{target?.name || '?'}</span>
+                            <span className="relation-card-label">{rel.label || '관계 설명 없음'}</span>
                           </div>
-                          <div className="relation-item-fields">
-                            <select
-                              value={rel.targetId}
-                              onChange={e => updateRelation(i, 'targetId', e.target.value)}
-                            >
-                              {work.characters.filter(c => c.id !== character.id).map(c => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                              ))}
-                            </select>
-                            <input
-                              className="relation-label-input"
-                              value={rel.label}
-                              onChange={e => updateRelation(i, 'label', e.target.value)}
-                              placeholder="관계 설명 (예: 동행자, 라이벌)"
-                            />
+                          <span className="relation-card-toggle">{isExpanded ? '▲' : '▼'}</span>
+                          <button className="relation-remove" onClick={e => { e.stopPropagation(); removeRelation(i) }}>&times;</button>
+                        </div>
+
+                        {/* Expanded form */}
+                        {isExpanded && (
+                          <div className="relation-card-body">
+                            <div className="relation-form-group">
+                              <label>대상 캐릭터</label>
+                              <select
+                                value={rel.targetId}
+                                onChange={e => updateRelation(i, { targetId: e.target.value })}
+                              >
+                                {work.characters.filter(c => c.id !== character.id).map(c => (
+                                  <option key={c.id} value={c.id}>{c.name} ({c.role})</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="relation-form-group">
+                              <label>관계 이름</label>
+                              <input
+                                value={rel.label}
+                                onChange={e => updateRelation(i, { label: e.target.value })}
+                                placeholder="예: 동행자, 라이벌, 스승, 첫사랑..."
+                              />
+                            </div>
+
+                            <div className="relation-form-group">
+                              <label>라인 색상</label>
+                              <div className="color-picker">
+                                {COLOR_PALETTE.map(c => (
+                                  <button
+                                    key={c}
+                                    className={`color-swatch ${rel.color === c ? 'selected' : ''}`}
+                                    style={{ background: c }}
+                                    onClick={() => updateRelation(i, { color: c })}
+                                  />
+                                ))}
+                                <input
+                                  type="color"
+                                  value={rel.color}
+                                  onChange={e => updateRelation(i, { color: e.target.value })}
+                                  className="color-custom"
+                                  title="직접 색상 선택"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="relation-form-group">
+                              <label>상세 메모</label>
+                              <textarea
+                                value={rel.note || ''}
+                                onChange={e => updateRelation(i, { note: e.target.value })}
+                                placeholder="이 관계에 대해 자유롭게 메모하세요. 만남의 계기, 감정의 변화, 향후 전개 등..."
+                                rows={4}
+                              />
+                            </div>
                           </div>
-                        </div>
-                        <div className="relation-item-right">
-                          <select
-                            className="relation-type-select"
-                            value={rel.type}
-                            onChange={e => updateRelation(i, 'type', e.target.value)}
-                            style={{ borderColor: typeInfo.color }}
-                          >
-                            {RELATION_TYPES.map(t => (
-                              <option key={t.value} value={t.value}>{t.label}</option>
-                            ))}
-                          </select>
-                          <button className="relation-remove" onClick={() => removeRelation(i)}>&times;</button>
-                        </div>
+                        )}
                       </div>
                     )
                   })}

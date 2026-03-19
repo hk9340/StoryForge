@@ -144,8 +144,6 @@ export default function RelationDiagram({ characters, onSelectCharacter, onUpdat
 
   return (
     <div className="diagram-container">
-      <p className="diagram-tip">캐릭터 노드를 클릭하면 상세 정보, 관계선을 클릭하면 주석을 편집할 수 있습니다.</p>
-
       <div className="diagram-svg-wrapper">
         <svg viewBox={`0 0 ${width} ${height}`} className="diagram-svg">
           <defs>

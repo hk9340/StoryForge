@@ -115,6 +115,18 @@
   color: white;
 }
 
+[data-theme="dark"] .editor-area {
+  background: var(--card-bg);
+}
+
+[data-theme="dark"] .editor-chapter-title-input {
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] .editor-textarea {
+  color: var(--text-primary);
+}
+
 [data-theme="dark"] .edge-edit-footer {
   background: var(--bg-secondary);
 }

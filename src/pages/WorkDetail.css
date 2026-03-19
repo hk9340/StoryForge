@@ -1122,22 +1122,32 @@
   font-size: 0.9rem;
 }
 
-.glossary-title-row {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
+.section-header-block {
+  margin-bottom: 24px;
 }
 
-.glossary-pin-count {
+.section-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-header-top h2 {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+}
+
+.section-header-badge {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--primary);
 }
 
-.glossary-hint {
+.section-header-hint {
+  margin-top: 6px;
   font-size: 0.78rem;
   color: var(--text-light);
+  line-height: 1.4;
 }
 
 /* ===== Editor Highlight Layer ===== */

@@ -654,8 +654,11 @@ export default function WorkDetail() {
         )}
         {activeTab === 'relations' && (
           <div className="relations-view">
-            <div className="chapters-header">
-              <h2>캐릭터 관계도</h2>
+            <div className="section-header-block">
+              <div className="section-header-top">
+                <h2>캐릭터 관계도</h2>
+              </div>
+              <p className="section-header-hint">캐릭터 노드를 클릭하면 상세 정보, 관계선을 클릭하면 주석을 편집할 수 있습니다.</p>
             </div>
             <RelationDiagram
               characters={characters}
@@ -675,12 +678,12 @@ export default function WorkDetail() {
 
         {activeTab === 'glossary' && (
           <div className="glossary-view">
-            <div className="chapters-header">
-              <div className="glossary-title-row">
+            <div className="section-header-block">
+              <div className="section-header-top">
                 <h2>용어집 ({glossary.length})</h2>
-                <span className="glossary-pin-count">&#128204; 핀 고정 ({glossary.filter(g => g.pinned).length})</span>
-                <span className="glossary-hint">집필 화면에서 핀 고정 용어가 하이라이트되어 클릭 시 설명을 볼 수 있습니다.</span>
+                <span className="section-header-badge">&#128204; 핀 고정 ({glossary.filter(g => g.pinned).length})</span>
               </div>
+              <p className="section-header-hint">집필 화면에서 핀 고정 용어가 하이라이트되어 클릭 시 설명을 볼 수 있습니다.</p>
             </div>
 
             <div className="glossary-form">

@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useConfirm } from '../contexts/ConfirmContext'
 import { useTheme } from '../contexts/ThemeContext'
-import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote, type Chapter, type Episode, type TimelineEvent, type ChapterRelationSnapshot } from '../data/sampleData'
+import { SAMPLE_WORKS, type WorldNote, type WorldFolder, type CharacterNote, type Chapter, type Episode, type TimelineEvent, type ChapterRelationSnapshot, type GlossaryTerm } from '../data/sampleData'
 import CharacterDetail from '../components/CharacterDetail'
 import RelationDiagram from '../components/RelationDiagram'
 import TimelineTab from '../components/TimelineTab'
@@ -15,13 +15,6 @@ type SortMode = 'name' | 'created' | 'updated'
 interface WorkSettings {
   autoSave: boolean
   autoSaveInterval: number // minutes
-}
-
-interface GlossaryTerm {
-  id: string
-  term: string
-  description: string
-  pinned: boolean
 }
 
 export default function WorkDetail() {
@@ -66,11 +59,7 @@ export default function WorkDetail() {
   const [characterSearch, setCharacterSearch] = useState('')
 
   // Glossary state
-  const [glossary, setGlossary] = useState<GlossaryTerm[]>([
-    { id: 'g1', term: '별의 숲', description: '별들이 지칠 때 쉬어가는 신비로운 장소. 일반인은 입구를 찾을 수 없다.', pinned: true },
-    { id: 'g2', term: '별빛 기억', description: '별이 가진 기억의 힘. 세상의 중요한 기억들을 보존하는 역할을 한다.', pinned: true },
-    { id: 'g3', term: '그림자 영역', description: '별빛이 사라진 곳에 생기는 어둠의 공간. 이곳에 들어가면 기억을 잃는다.', pinned: false },
-  ])
+  const [glossary, setGlossary] = useState<GlossaryTerm[]>(work?.glossary || [])
   const [newTerm, setNewTerm] = useState('')
   const [newTermDesc, setNewTermDesc] = useState('')
   const [glossaryTooltip, setGlossaryTooltip] = useState<{ term: string; desc: string; x: number; y: number } | null>(null)
